@@ -1,393 +1,536 @@
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'binary_operator_widget.dart';
+import 'num_button_widget.dart';
+import 'operators.dart';
+import 'stack_item.dart';
+import 'stack_item_widget.dart';
 
 void main() {
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  runApp(RPNCalc());
+  runApp(const RpnCalc());
 }
 
-class RPNCalc extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'RPN Calc',
-      theme: ThemeData(
-        buttonTheme: ButtonThemeData(
-          height: 60,
-        ),
-        textTheme: TextTheme(
-          button: TextStyle(
-            fontSize: 24,
-          ),
-        ),
-        primarySwatch: Colors.orange,
-        brightness: Brightness.dark,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: AppHome(),
-    );
+class RpnStack {
+  RpnStack() {
+    stack.add(EditableItem.blank());
+  }
+  RpnStack.clone(RpnStack source) {
+    // XXX need to deep copy items
+    stack.addAll(source.stack);
+    appendNew = source.appendNew;
+  }
+  final List<StackItem> stack = [];
+  // When true, the next append operation should create a new item.
+  bool appendNew = false;
+
+  int get length => stack.length;
+  StackItem get first => stack[0];
+  bool get isEmpty => length == 1 && first.isEmpty;
+
+  StackItem operator [](int i) => stack[i];
+
+  void _realizeStack() {
+    final first = this.first;
+    if (first is EditableItem) {
+      if (first.isEmpty) {
+        _pop();
+      } else {
+        stack[0] = first.realize();
+      }
+    }
+    assert(stack.every((element) => element is RealizedItem),
+        'Every element in stack should be realized.');
+  }
+
+  void push(StackItem v) {
+    stack.insert(0, v);
+  }
+
+  StackItem _pop() {
+    if (stack.isNotEmpty) {
+      return stack.removeAt(0);
+    }
+    return null;
+  }
+
+  void advance() {
+    _realizeStack();
+    push(EditableItem(stack[0]));
+  }
+
+  void drop() {
+    if (stack.length == 1) {
+      stack[0] = EditableItem.blank();
+    } else {
+      _pop();
+    }
+  }
+
+  void swap() {
+    if (stack.length < 2) {
+      return;
+    }
+    _realizeStack();
+    final first = stack[0];
+    final second = stack[1];
+    stack[0] = second;
+    stack[1] = first;
+  }
+
+  void rotateDown() {
+    if (stack.length < 2) {
+      return;
+    }
+    _realizeStack();
+    final first = _pop();
+    stack.add(first);
+  }
+
+  void rotateUp() {
+    if (stack.length < 2) {
+      return;
+    }
+    _realizeStack();
+    final last = stack.removeAt(stack.length - 1);
+    push(last);
+  }
+
+  void applyBinaryOperation(BinaryOperator o) {
+    if (stack.length < 2) {
+      return;
+    }
+    appendNew = true;
+    // If the first item is editable and empty , remove and skip the operation.
+    if (first.isEmpty) {
+      _pop();
+      return;
+    }
+    _realizeStack();
+    final fn = operations[o];
+    final b = _pop().value;
+    final a = _pop().value;
+    final res = fn(a, b);
+    push(RealizedItem(res));
+  }
+
+  void inverse() {
+    final v = first.value;
+    if (v != null && v != 0) {
+      stack[0] = RealizedItem(1 / v);
+    }
+  }
+
+  void reverseSign() {
+    final v = first.value;
+    stack[0] = RealizedItem(v * -1);
+  }
+
+  void percent() {
+    num res;
+    switch (stack.length) {
+      case 0:
+        return;
+      case 1:
+        res = _pop().value / 100;
+        break;
+      default:
+        res = (_pop().value / 100) * _pop().value;
+        break;
+    }
+    push(RealizedItem(res));
+    appendNew = true;
+  }
+
+  void clearCurrent() {
+    stack[0] = EditableItem.blank();
+  }
+
+  void appendCurrent(String c) {
+    final first = this.first;
+    EditableItem updated;
+    // Append new editable item.
+    if (first is EditableItem) {
+      // Update existing item.
+      first.appendChar(c);
+    } else if (appendNew) {
+      _realizeStack();
+      appendNew = false;
+      updated = EditableItem.blank()..appendChar(c);
+      push(updated);
+    } else if (first is RealizedItem) {
+      // Replace realized item with new editable item.
+      updated = EditableItem.blank()..appendChar(c);
+      stack[0] = updated;
+    }
+  }
+
+  void backspaceCurrent() {
+    final first = this.first;
+    if (first is RealizedItem) {
+      stack[0] = EditableItem(first)..removeChar();
+    } else if (first is EditableItem) {
+      first.removeChar();
+    }
+  }
+
+  void clearAll() {
+    stack.clear();
+    push(EditableItem.blank());
+  }
+
+  void remove(int index) {
+    stack.removeAt(index);
+  }
+
+  void replaceAt(int index, num newVal) {
+    stack[index] = RealizedItem(newVal);
   }
 }
 
+class RpnCalc extends StatelessWidget {
+  const RpnCalc({Key key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+      title: 'RPN Calc',
+      theme: ThemeData(
+          buttonTheme: const ButtonThemeData(height: 60),
+          textTheme: const TextTheme(button: TextStyle(fontSize: 24)),
+          primarySwatch: Colors.orange,
+          brightness: Brightness.dark,
+          visualDensity: VisualDensity.adaptivePlatformDensity),
+      home: const AppHome());
+}
+
 class AppHome extends StatefulWidget {
-  AppHome({Key key}) : super(key: key);
+  const AppHome({Key key}) : super(key: key);
 
   @override
   _AppHomeState createState() => _AppHomeState();
 }
 
+const maxUndoBuffer = 5;
+
 class _AppHomeState extends State<AppHome> {
-  String _current = "";
-  bool _newItem = true;
-  List<num> _stack = [];
+  RpnStack _stack = RpnStack();
+  // TODO improve undo implementation.
+  final List<RpnStack> _undoBuffer = [];
 
-  num _parseNum(s) {
-    if (s == "") {
-      return null;
-    } else if (_current.contains(".")) {
-      return double.parse(s);
-    } else {
-      return int.parse(s);
-    }
-  }
+//  void _onReorder(int oldIndex, newIndex) {
+//    setState(() {
+//      if (newIndex > oldIndex) {
+//        newIndex -= 1;
+//      }
+//      final num item = _stack.removeAt(oldIndex);
+//      _stack.insert(newIndex, item);
+//    });
+//  }
 
-  void _pushStack(num n) {
+  void _setStateWithUndo(Function f) {
     setState(() {
-      _stack.insert(0, n);
-      _newItem = true;
-    });
-  }
-
-  void _applyOperator(Operator o) {
-    if (_stack.length == 0) return;
-    var fn = operations[o];
-    var b = _parseNum(_current);
-    if (b == null) {
-      b = _stack.removeAt(0);
-    }
-    setState(() {
-      var a = _stack.removeAt(0);
-      var res = fn(a, b);
-      _pushStack(res);
-      _current = "";
-    });
-  }
-
-  void _appendCurrent(String c) {
-    setState(() {
-      if (_newItem) {
-        _current = c;
-        _newItem = false;
-      } else if (c != "." || !_current.contains(".")) {
-        _current += c;
+      final currentState = RpnStack.clone(_stack);
+      if (_undoBuffer.length > maxUndoBuffer) {
+        _undoBuffer.removeLast();
       }
+      _undoBuffer.insert(0, currentState);
+      f();
     });
   }
 
-  void _backspaceCurrent() {
+  void _undo() {
     setState(() {
-      if (_current != "") {
-        _current = _current.substring(0, _current.length - 1);
+      if (_undoBuffer.isEmpty) {
+        return;
       }
+      final prevState = _undoBuffer.removeAt(0);
+      _stack = prevState;
     });
   }
 
-  void _reverseSign() {
+  void _handleAppend(String c) {
     setState(() {
-      if (_current != "") {
-        if (_current.startsWith("-")) {
-          _current = _current.substring(1, _current.length);
-        } else {
-          _current = "-" + _current;
-        }
-      } else if (_stack.length > 0) {
-        _stack[0] = -1 * _stack[0];
-      }
+      HapticFeedback.selectionClick();
+      _stack.appendCurrent(c);
     });
   }
 
-  void _inverse() {
-    setState(() {
-      num n;
-      if (_current != "") {
-        n = _parseNum(_current);
-        if (n != 0) {
-          _current = (1 / n).toString();
-        }
-      } else if (_stack.length > 0) {
-        n = _stack[0];
-        if (n != 0) {
-          _stack[0] = 1 / n;
-        }
-      }
+  void _handleAdvance() {
+    _setStateWithUndo(() {
+      HapticFeedback.heavyImpact();
+      _stack.advance();
     });
   }
 
-  void _percent() {
-    num a = 1, b, res;
-    setState(() {
-      if (_current != "") {
-        b = _parseNum(_current);
-      } else if (_stack.length > 0) {
-        b = _stack.removeAt(0);
-      }
-      if (_stack.length > 0) {
-        a = _stack[0];
-      }
-      res = (b / 100) * a;
-      _pushStack(res);
-      _current = "";
+  void _handleClearAll() {
+    _setStateWithUndo(() {
+      HapticFeedback.mediumImpact();
+      _stack.clearAll();
     });
   }
 
-  void _clearCurrent() {
-    setState(() {
-      _newItem = true;
-      if (_current == "") {
-        _clearStack();
-      }
-      _current = "";
+  void _handleClear() {
+    _setStateWithUndo(() {
+      HapticFeedback.selectionClick();
+      _stack.clearCurrent();
     });
   }
 
-  void _clearStack() {
-    setState(() {
-      _stack = [];
+  void _applyBinaryOperation(BinaryOperator op) {
+    _setStateWithUndo(() {
+      HapticFeedback.lightImpact();
+      _stack.applyBinaryOperation(op);
+    });
+  }
+
+  void _onPaste(int index, num newVal) {
+    _setStateWithUndo(() {
+      _stack.replaceAt(index, newVal);
+    });
+  }
+
+  void _onRemove(int index) {
+    _setStateWithUndo(() {
+      _stack.remove(index);
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          // Stack
-          Container(
-            color: Colors.grey[500],
-            height: 150,
-            padding: const EdgeInsets.all(5),
-            margin: MediaQuery.of(context).padding,
-            child: ListView.builder(
-                shrinkWrap: true,
-                reverse: true,
-                itemCount: _stack.length,
-                itemBuilder: (context, index) {
-                  var n = _stack[index];
-                  return Text('$n',
-                      textAlign: TextAlign.right,
-                      style: GoogleFonts.robotoMono(
-                        textStyle: TextStyle(
-                          fontSize: 24,
-                        ),
-                      ));
-                }),
-          ),
-          // Current item
-          Container(
-            color: Colors.grey[800],
-            constraints:
-                BoxConstraints.expand(width: double.infinity, height: 40),
-            padding: const EdgeInsets.all(5),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                '$_current',
-                textAlign: TextAlign.right,
-                style: GoogleFonts.robotoMono(
-                  textStyle: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "Roboto Mono",
-                    fontSize: 24,
-                    color: (_newItem ? Colors.orangeAccent : Colors.white),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                child: Table(
-                  defaultColumnWidth: FlexColumnWidth(0.5),
-                  children: [
-                    TableRow(children: [
-                      FlatButton(
-                        onPressed: _reverseSign,
-                        child: Text("±"),
-                      ),
-                      FlatButton(
-                        onPressed: _inverse,
-                        child: Text("1/X"),
-                      ),
-                      FlatButton(
-                        onPressed: _percent,
-                        child: Text("％"),
-                      ),
-                    ]),
-                    TableRow(children: [
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("7");
-                        },
-                        child: Text("7"),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("8");
-                        },
-                        child: Text("8"),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("9");
-                        },
-                        child: Text("9"),
-                      ),
-                    ]),
-                    TableRow(children: [
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("4");
-                        },
-                        child: Text("4"),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("5");
-                        },
-                        child: Text("5"),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("6");
-                        },
-                        child: Text("6"),
-                      ),
-                    ]),
-                    TableRow(children: [
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("1");
-                        },
-                        child: Text("1"),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("2");
-                        },
-                        child: Text("2"),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("3");
-                        },
-                        child: Text("3"),
-                      ),
-                    ]),
-                    TableRow(children: [
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent("0");
-                        },
-                        child: Text("0"),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          _appendCurrent(".");
-                        },
-                        child: Text("."),
-                      ),
-                      FlatButton.icon(
-                        onPressed: _backspaceCurrent,
-                        icon: Icon(Icons.backspace),
-                        label: Text(""),
-                      ),
-                    ]),
-                  ],
-                ),
-              ),
+  Widget build(BuildContext context) => Scaffold(
+        body: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
               Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  FlatButton(
-                    child: Text(_current == "" ? "AC" : "C"),
-                    onPressed: _current == "" ? _clearStack : _clearCurrent,
-                    onLongPress: () {
-                      _clearCurrent();
-                      _clearStack();
-                    },
+                  // Stack
+                  Ink(
+                    color: Colors.grey[500],
+                    height: 240,
+                    padding: const EdgeInsets.all(5),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      reverse: true,
+                      itemCount: _stack.length,
+                      itemBuilder: (context, index) {
+                        final item = _stack[index];
+                        // XXX improve use of colors; pull this logic out to method
+                        var color = Colors.white;
+                        if (index == 0) {
+                          if (!_stack.appendNew && item is RealizedItem ||
+                              (item is EditableItem && !item.isEdited)) {
+                            color = Colors.grey[600];
+                          } else if (!_stack.appendNew) {
+                            color = Colors.orangeAccent;
+                          }
+                        }
+                        return StackItemWidget(
+                          onPaste: (newVal) => _onPaste(index, newVal),
+                          onRemove: () => _onRemove(index),
+                          item: item,
+                          color: color,
+                        );
+                      },
+                    ),
                   ),
-                  FlatButton(
-                    child: Text("÷"),
-                    onPressed: () {
-                      _applyOperator(Operator.divide);
-                    },
+                ],
+              ),
+              // Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Numpad
+                  Expanded(
+                    flex: 4,
+                    child: Table(
+                      defaultColumnWidth: const FlexColumnWidth(0.5),
+                      children: [
+                        TableRow(
+                          children: [
+                            FlatButton(
+                              shape: const ContinuousRectangleBorder(),
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                _setStateWithUndo(_stack.swap);
+                              },
+                              height: 40,
+                              color: Colors.grey[700],
+                              child: const Text(
+                                '⇅',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
+                            FlatButton(
+                              shape: const ContinuousRectangleBorder(),
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                _setStateWithUndo(_stack.rotateUp);
+                              },
+                              color: Colors.grey[700],
+                              height: 40,
+                              child: const Text(
+                                'R↑',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                            FlatButton(
+                              shape: const ContinuousRectangleBorder(),
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                _setStateWithUndo(_stack.rotateDown);
+                              },
+                              color: Colors.grey[700],
+                              height: 40,
+                              child: const Text(
+                                'R↓',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.grey[800]),
+                            ),
+                          ),
+                          children: [
+                            FlatButton(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                _setStateWithUndo(_stack.reverseSign);
+                              },
+                              child: const Text(
+                                '±',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
+                            FlatButton(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                _setStateWithUndo(_stack.inverse);
+                              },
+                              child: const Text(
+                                '1/X',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                            FlatButton(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                _setStateWithUndo(_stack.percent);
+                              },
+                              child: const Text(
+                                '％',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TableRow(children: [
+                          NumButtonWidget(char: '7', onPressed: _handleAppend),
+                          NumButtonWidget(char: '8', onPressed: _handleAppend),
+                          NumButtonWidget(char: '9', onPressed: _handleAppend),
+                        ]),
+                        TableRow(children: [
+                          NumButtonWidget(char: '4', onPressed: _handleAppend),
+                          NumButtonWidget(char: '5', onPressed: _handleAppend),
+                          NumButtonWidget(char: '6', onPressed: _handleAppend),
+                        ]),
+                        TableRow(children: [
+                          NumButtonWidget(char: '1', onPressed: _handleAppend),
+                          NumButtonWidget(char: '2', onPressed: _handleAppend),
+                          NumButtonWidget(char: '3', onPressed: _handleAppend),
+                        ]),
+                        TableRow(children: [
+                          NumButtonWidget(char: '0', onPressed: _handleAppend),
+                          NumButtonWidget(char: '.', onPressed: _handleAppend),
+                          FlatButton(
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _setStateWithUndo(_stack.backspaceCurrent);
+                            },
+                            onLongPress: _handleClear,
+                            child: const Icon(
+                              Icons.backspace,
+                              semanticLabel: 'Backspace',
+                            ),
+                          ),
+                        ]),
+                      ],
+                    ),
                   ),
-                  FlatButton(
-                    child: Text("×"),
-                    onPressed: () {
-                      _applyOperator(Operator.multiply);
-                    },
-                  ),
-                  FlatButton(
-                    child: Text("−"),
-                    onPressed: () {
-                      _applyOperator(Operator.subtract);
-                    },
-                  ),
-                  FlatButton(
-                    child: Text("+"),
-                    onPressed: () {
-                      _applyOperator(Operator.add);
-                    },
-                  ),
-                  FlatButton.icon(
-                    color: Colors.orangeAccent,
-                    icon: Icon(Icons.keyboard_return),
-                    label: Text(""),
-                    onPressed: () {
-                      var n = _parseNum(_current);
-                      if (n != null) {
-                        _pushStack(n);
-                      }
-                    },
+                  // Operators
+                  Expanded(
+                    flex: 0,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 40,
+                          child: FlatButton(
+                            shape: const ContinuousRectangleBorder(),
+                            color: Colors.blueGrey[600],
+                            onPressed: _undoBuffer.isEmpty ? null : _undo,
+                            height: 30,
+                            disabledColor: Colors.blueGrey[700],
+                            child: const Icon(Icons.undo),
+                          ),
+                        ),
+                        FlatButton(
+                          shape: const ContinuousRectangleBorder(),
+                          color: Colors.blueGrey[800],
+                          height: 64,
+                          onPressed: (_stack.isEmpty || _stack.first.isEmpty)
+                              ? _handleClearAll
+                              : _handleClear,
+                          onLongPress: _handleClearAll,
+                          child: Text(_stack.isEmpty || _stack.first.isEmpty
+                              ? 'AC'
+                              : 'C'),
+                        ),
+                        BinaryOperatorWidget(
+                            label: '÷',
+                            op: BinaryOperator.divide,
+                            onPressed: _applyBinaryOperation),
+                        BinaryOperatorWidget(
+                            label: '×',
+                            op: BinaryOperator.multiply,
+                            onPressed: _applyBinaryOperation),
+                        BinaryOperatorWidget(
+                            label: '−',
+                            op: BinaryOperator.subtract,
+                            onPressed: _applyBinaryOperation),
+                        BinaryOperatorWidget(
+                            label: '+',
+                            op: BinaryOperator.add,
+                            onPressed: _applyBinaryOperation),
+                        FlatButton(
+                          shape: const ContinuousRectangleBorder(),
+                          height: 100,
+                          color: Colors.orangeAccent,
+                          onPressed: _handleAdvance,
+                          child: const Icon(
+                            Icons.keyboard_return,
+                            size: 34,
+                            semanticLabel: 'Enter',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      );
 }
-
-typedef Operation = num Function(num a, num b);
-
-enum Operator { add, subtract, multiply, divide }
-
-var operations = <Operator, Operation>{
-  Operator.add: (num a, b) {
-    return a + b;
-  },
-  Operator.subtract: (num a, b) {
-    return a - b;
-  },
-  Operator.multiply: (num a, b) {
-    return a * b;
-  },
-  Operator.divide: (num a, b) {
-    return a / b;
-  },
-};
