@@ -49,14 +49,6 @@ class RpnStack {
     push(EditableItem(stack[0]));
   }
 
-  void drop() {
-    if (stack.length == 1) {
-      stack[0] = EditableItem.blank();
-    } else {
-      _pop();
-    }
-  }
-
   void swap() {
     if (stack.length < 2) {
       return;
