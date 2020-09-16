@@ -24,7 +24,7 @@ class StackItemWidget extends StatelessWidget {
           HapticFeedback.lightImpact();
           showMenu<String>(
             context: context,
-            // TODO position relative to selected item.
+            // TODO(alexei): position relative to selected item.
             position: const RelativeRect.fromLTRB(100, 100, 100, 100),
             items: [
               PopupMenuItem<String>(
@@ -57,7 +57,6 @@ class StackItemWidget extends StatelessWidget {
                         )));
                 break;
               case 'paste':
-                // XXX get value from clipboard, validate
                 num newVal;
                 Clipboard.getData('text/plain').then((value) {
                   final s = value.text;
@@ -67,7 +66,7 @@ class StackItemWidget extends StatelessWidget {
                     } else {
                       newVal = int.parse(s);
                     }
-                  } on FormatException catch (e) {
+                  } on FormatException catch (_) {
                     Scaffold.of(context).showSnackBar(const SnackBar(
                       content: Text('Clipboard is not a valid number'),
                       duration: Duration(seconds: 1),
@@ -83,8 +82,6 @@ class StackItemWidget extends StatelessWidget {
             }
           });
         },
-        // XXX handle draging?
-        // onLongPress: () =>
         child: Text('$item',
             textAlign: TextAlign.right,
             style: GoogleFonts.robotoMono(

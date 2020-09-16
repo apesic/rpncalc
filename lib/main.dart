@@ -2,8 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info/package_info.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'binary_operator_widget.dart';
 import 'num_button_widget.dart';
@@ -13,7 +16,7 @@ import 'stack_item_widget.dart';
 
 void main() {
   LicenseRegistry.addLicense(() async* {
-    final license = await rootBundle.loadString('google_fonts/OFL.txt');
+    final license = await rootBundle.loadString('google_fonts/LICENSE.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
   runApp(const RpnCalc());
@@ -309,38 +312,46 @@ class _AppHomeState extends State<AppHome> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              Column(
+              Stack(
                 children: [
-                  // Stack
-                  Ink(
-                    color: Colors.grey[500],
-                    height: 240,
-                    padding: const EdgeInsets.all(5),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      reverse: true,
-                      itemCount: _stack.length,
-                      itemBuilder: (context, index) {
-                        final item = _stack[index];
-                        // XXX improve use of colors; pull this logic out to method
-                        var color = Colors.white;
-                        if (index == 0) {
-                          if (!_stack.appendNew && item is RealizedItem ||
-                              (item is EditableItem && !item.isEdited)) {
-                            color = Colors.grey[600];
-                          } else if (!_stack.appendNew) {
-                            color = Colors.orangeAccent;
-                          }
-                        }
-                        return StackItemWidget(
-                          onPaste: (newVal) => _onPaste(index, newVal),
-                          onRemove: () => _onRemove(index),
-                          item: item,
-                          color: color,
-                        );
-                      },
-                    ),
+                  Column(
+                    children: [
+                      // Stack
+                      Ink(
+                        color: Colors.grey[500],
+                        height: 240,
+                        padding: const EdgeInsets.all(5),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          reverse: true,
+                          itemCount: _stack.length,
+                          itemBuilder: (context, index) {
+                            final item = _stack[index];
+                            // XXX improve use of colors; pull this logic out to method
+                            var color = Colors.white;
+                            if (index == 0) {
+                              if (!_stack.appendNew && item is RealizedItem ||
+                                  (item is EditableItem && !item.isEdited)) {
+                                color = Colors.grey[600];
+                              } else if (!_stack.appendNew) {
+                                color = Colors.orangeAccent;
+                              }
+                            }
+                            return StackItemWidget(
+                              onPaste: (newVal) => _onPaste(index, newVal),
+                              onRemove: () => _onRemove(index),
+                              item: item,
+                              color: color,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert_sharp),
+                    onPressed: () => _showAboutPage(context),
+                  )
                 ],
               ),
               // Buttons
@@ -533,4 +544,63 @@ class _AppHomeState extends State<AppHome> {
           ),
         ),
       );
+}
+
+Future<void> _showAboutPage(BuildContext context) async {
+  final packageInfo = await PackageInfo.fromPlatform();
+  return showAboutDialog(
+    context: context,
+    applicationIcon: const Image(
+      image: AssetImage('assets/icon/icon.png'),
+      height: 75,
+    ),
+    applicationName: packageInfo.appName,
+    applicationVersion: packageInfo.version,
+    applicationLegalese: '© 2020 Alexei Pesic',
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(top: 20),
+        child: RichText(
+          text: TextSpan(
+            children: [
+              const TextSpan(
+                text: 'RPNcalc is a free, open-source calculator using ',
+              ),
+              TextSpan(
+                text: 'Reverse Polish Notation',
+                style: TextStyle(color: Theme.of(context).accentColor),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () async {
+                    const url =
+                        'https://en.wikipedia.org/wiki/Reverse_Polish_notation';
+                    if (await canLaunch(url)) {
+                      await launch(url);
+                    }
+                  },
+              ),
+              const TextSpan(
+                text:
+                    '.\n\nTo leave feedback, submit a bug report, or view the '
+                    'source-code, see:\n',
+              ),
+              TextSpan(
+                text: 'https://github.com/apesic/rpncalc',
+                style: TextStyle(color: Theme.of(context).accentColor),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () async {
+                    const url = 'https://github.com/apesic/rpncalc';
+                    if (await canLaunch(url)) {
+                      await launch(url);
+                    }
+                  },
+              ),
+              const TextSpan(
+                text: '\n\nRPNcalc is distributed under the GPL-3.0 License.',
+              ),
+            ],
+          ),
+        ),
+      )
+    ],
+  );
 }
