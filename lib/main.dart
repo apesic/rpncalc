@@ -15,6 +15,8 @@ import 'rpn_stack.dart';
 import 'stack_item.dart';
 import 'stack_item_widget.dart';
 
+const appName = 'RPNcalc';
+
 void main() {
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/LICENSE.txt');
@@ -27,12 +29,19 @@ class RpnCalc extends StatelessWidget {
   const RpnCalc({Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) => MaterialApp(
-      title: 'RPN Calc',
+      title: appName,
       theme: ThemeData(
           buttonTheme: const ButtonThemeData(height: 60),
           textTheme: const TextTheme(button: TextStyle(fontSize: 24)),
           primarySwatch: Colors.orange,
           brightness: Brightness.dark,
+          snackBarTheme: SnackBarThemeData(
+            backgroundColor: Colors.grey[800],
+            contentTextStyle: const TextStyle(
+              fontSize: 18,
+              color: Colors.white,
+            ),
+          ),
           visualDensity: VisualDensity.adaptivePlatformDensity),
       home: const AppHome());
 }
@@ -141,12 +150,11 @@ class _AppHomeState extends State<AppHome> {
                           itemCount: _stack.length,
                           itemBuilder: (context, index) {
                             final item = _stack[index];
-                            // XXX improve use of colors; pull this logic out to method
                             var color = Colors.white;
                             if (index == 0) {
                               if (!_stack.appendNew && item is RealizedItem ||
                                   (item is EditableItem && !item.isEdited)) {
-                                color = Colors.grey[600];
+                                color = Colors.grey[800];
                               } else if (!_stack.appendNew) {
                                 color = Colors.orangeAccent;
                               }
@@ -163,7 +171,7 @@ class _AppHomeState extends State<AppHome> {
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.more_vert_sharp),
+                    icon: const Icon(Icons.more_vert),
                     onPressed: () => _showAboutPage(context),
                   )
                 ],
@@ -181,43 +189,49 @@ class _AppHomeState extends State<AppHome> {
                       children: [
                         TableRow(
                           children: [
-                            FlatButton(
+                            ButtonTheme(
                               shape: const ContinuousRectangleBorder(),
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.swap);
-                              },
                               height: 40,
-                              color: Colors.grey[700],
-                              child: const Text(
-                                '⇅',
-                                style: TextStyle(fontSize: 20),
+                              child: FlatButton(
+                                color: Colors.grey[700],
+                                onPressed: () {
+                                  HapticFeedback.selectionClick();
+                                  _setStateWithUndo(_stack.swap);
+                                },
+                                child: const Text(
+                                  '⇅',
+                                  style: TextStyle(fontSize: 20),
+                                ),
                               ),
                             ),
-                            FlatButton(
-                              shape: const ContinuousRectangleBorder(),
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.rotateUp);
-                              },
-                              color: Colors.grey[700],
+                            ButtonTheme(
                               height: 40,
-                              child: const Text(
-                                'R↑',
-                                style: TextStyle(fontSize: 18),
+                              shape: const ContinuousRectangleBorder(),
+                              child: FlatButton(
+                                color: Colors.grey[700],
+                                onPressed: () {
+                                  HapticFeedback.selectionClick();
+                                  _setStateWithUndo(_stack.rotateUp);
+                                },
+                                child: const Text(
+                                  'R↑',
+                                  style: TextStyle(fontSize: 18),
+                                ),
                               ),
                             ),
-                            FlatButton(
-                              shape: const ContinuousRectangleBorder(),
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.rotateDown);
-                              },
-                              color: Colors.grey[700],
+                            ButtonTheme(
                               height: 40,
-                              child: const Text(
-                                'R↓',
-                                style: TextStyle(fontSize: 18),
+                              shape: const ContinuousRectangleBorder(),
+                              child: FlatButton(
+                                color: Colors.grey[700],
+                                onPressed: () {
+                                  HapticFeedback.selectionClick();
+                                  _setStateWithUndo(_stack.rotateDown);
+                                },
+                                child: const Text(
+                                  'R↓',
+                                  style: TextStyle(fontSize: 18),
+                                ),
                               ),
                             ),
                           ],
@@ -301,26 +315,30 @@ class _AppHomeState extends State<AppHome> {
                       children: [
                         SizedBox(
                           height: 40,
-                          child: FlatButton(
-                            shape: const ContinuousRectangleBorder(),
-                            color: Colors.blueGrey[600],
-                            onPressed: _undoBuffer.isEmpty ? null : _undo,
+                          child: ButtonTheme(
                             height: 30,
-                            disabledColor: Colors.blueGrey[700],
-                            child: const Icon(Icons.undo),
+                            shape: const ContinuousRectangleBorder(),
+                            child: FlatButton(
+                              color: Colors.blueGrey[600],
+                              onPressed: _undoBuffer.isEmpty ? null : _undo,
+                              disabledColor: Colors.blueGrey[700],
+                              child: const Icon(Icons.undo),
+                            ),
                           ),
                         ),
-                        FlatButton(
-                          shape: const ContinuousRectangleBorder(),
-                          color: Colors.blueGrey[800],
+                        ButtonTheme(
                           height: 64,
-                          onPressed: (_stack.isEmpty || _stack.first.isEmpty)
-                              ? _handleClearAll
-                              : _handleClear,
-                          onLongPress: _handleClearAll,
-                          child: Text(_stack.isEmpty || _stack.first.isEmpty
-                              ? 'AC'
-                              : 'C'),
+                          shape: const ContinuousRectangleBorder(),
+                          child: FlatButton(
+                            color: Colors.blueGrey[800],
+                            onPressed: (_stack.isEmpty || _stack.first.isEmpty)
+                                ? _handleClearAll
+                                : _handleClear,
+                            onLongPress: _handleClearAll,
+                            child: Text(_stack.isEmpty || _stack.first.isEmpty
+                                ? 'AC'
+                                : 'C'),
+                          ),
                         ),
                         BinaryOperatorWidget(
                             label: '÷',
@@ -338,15 +356,17 @@ class _AppHomeState extends State<AppHome> {
                             label: '+',
                             op: BinaryOperator.add,
                             onPressed: _applyBinaryOperation),
-                        FlatButton(
-                          shape: const ContinuousRectangleBorder(),
+                        ButtonTheme(
                           height: 100,
-                          color: Colors.orangeAccent,
-                          onPressed: _handleAdvance,
-                          child: const Icon(
-                            Icons.keyboard_return,
-                            size: 34,
-                            semanticLabel: 'Enter',
+                          shape: const ContinuousRectangleBorder(),
+                          child: FlatButton(
+                            color: Colors.orangeAccent,
+                            onPressed: _handleAdvance,
+                            child: const Icon(
+                              Icons.keyboard_return,
+                              size: 34,
+                              semanticLabel: 'Enter',
+                            ),
                           ),
                         ),
                       ],
@@ -368,7 +388,7 @@ Future<void> _showAboutPage(BuildContext context) async {
       image: AssetImage('assets/icon/icon.png'),
       height: 75,
     ),
-    applicationName: packageInfo.appName,
+    applicationName: appName,
     applicationVersion: packageInfo.version,
     applicationLegalese: '© 2020 Alexei Pesic',
     children: [
@@ -378,7 +398,7 @@ Future<void> _showAboutPage(BuildContext context) async {
           text: TextSpan(
             children: [
               const TextSpan(
-                text: 'RPNcalc is a free, open-source calculator using ',
+                text: '$appName is a free, open-source calculator using ',
               ),
               TextSpan(
                 text: 'Reverse Polish Notation',
@@ -409,7 +429,7 @@ Future<void> _showAboutPage(BuildContext context) async {
                   },
               ),
               const TextSpan(
-                text: '\n\nRPNcalc is distributed under the GPL-3.0 License.',
+                text: '\n\n$appName is distributed under the GPL-3.0 License.',
               ),
             ],
           ),

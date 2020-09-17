@@ -11,10 +11,11 @@ class NumButtonWidget extends StatelessWidget {
   final String char;
 
   @override
-  Widget build(BuildContext context) => FlatButton(
+  Widget build(BuildContext context) => ButtonTheme(
       height: 85,
-      onPressed: () {
-        onPressed(char);
-      },
-      child: Text(char));
+      child: FlatButton(
+          onPressed: () {
+            onPressed(char);
+          },
+          child: Text(char)));
 }
