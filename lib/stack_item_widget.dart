@@ -50,15 +50,17 @@ class StackItemWidget extends StatelessWidget {
             switch (value) {
               case 'copy':
                 Clipboard.setData(ClipboardData(text: item.toString())).then(
-                    // XXX get snackbar to match theme colors
-                    (_) => Scaffold.of(context).showSnackBar(const SnackBar(
-                          content: Text('Copied to clipboard'),
-                          duration: Duration(seconds: 1),
-                        )));
+                  (_) => Scaffold.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Copied to clipboard'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  ),
+                );
                 break;
               case 'paste':
-                num newVal;
                 Clipboard.getData('text/plain').then((value) {
+                  num newVal;
                   final s = value.text;
                   try {
                     if (s.contains('.')) {
@@ -67,10 +69,13 @@ class StackItemWidget extends StatelessWidget {
                       newVal = int.parse(s);
                     }
                   } on FormatException catch (_) {
-                    Scaffold.of(context).showSnackBar(const SnackBar(
-                      content: Text('Clipboard is not a valid number'),
-                      duration: Duration(seconds: 1),
-                    ));
+                    Scaffold.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Clipboard is not a valid number'),
+                        backgroundColor: Theme.of(context).errorColor,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
                     return 0;
                   }
                   onPaste(newVal);

@@ -6,8 +6,15 @@ class RpnStack {
     stack.add(EditableItem.blank());
   }
   RpnStack.clone(RpnStack source) {
-    // XXX need to deep copy items
-    stack.addAll(source.stack);
+    for (final o in source.stack) {
+      StackItem clone;
+      if (o is EditableItem) {
+        clone = EditableItem(o);
+      } else if (o is RealizedItem) {
+        clone = RealizedItem(o.value);
+      }
+      stack.add(clone);
+    }
     appendNew = source.appendNew;
   }
   final List<StackItem> stack = [];
@@ -45,8 +52,9 @@ class RpnStack {
   }
 
   void advance() {
+    final current = stack.first;
     _realizeStack();
-    push(EditableItem(stack[0]));
+    push(EditableItem(current));
   }
 
   void swap() {

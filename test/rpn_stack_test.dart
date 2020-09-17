@@ -10,6 +10,11 @@ void main() {
       expect(s.isEmpty, true);
     });
 
+    test('advancing when empty has no result', () {
+      final s = RpnStack()..advance();
+      expect(s.isEmpty, true);
+    });
+
     test('characters are appended', () {
       final s = RpnStack()
         ..appendCurrent('2')
