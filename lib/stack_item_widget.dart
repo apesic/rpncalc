@@ -87,10 +87,66 @@ class StackItemWidget extends StatelessWidget {
             }
           });
         },
-        child: Text('$item',
-            textAlign: TextAlign.right,
-            style: GoogleFonts.robotoMono(
-              textStyle: TextStyle(fontSize: 24, color: color),
-            )),
+        child: Column(
+          children: [
+            IntrinsicHeight(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('$item',
+                      textAlign: TextAlign.right,
+                      style: GoogleFonts.robotoMono(
+                        textStyle: TextStyle(fontSize: 36, color: color),
+                      )),
+                  if (item is EditableItem)
+                    const Carat()
+                  else
+                    const Padding(padding: EdgeInsets.only(right: 2)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+class Carat extends StatefulWidget {
+  @override
+  const Carat({Key key}) : super(key: key);
+
+  @override
+  _CaratState createState() => _CaratState();
+}
+
+class _CaratState extends State<Carat> with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+  final duration = const Duration(milliseconds: 500);
+
+  @override
+  void initState() {
+    _controller = AnimationController(
+      duration: duration,
+      reverseDuration: duration,
+      vsync: this,
+    )..repeat(reverse: true);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+        opacity: _controller,
+        child: const VerticalDivider(
+          indent: 2,
+          endIndent: 2,
+          thickness: 2,
+          width: 2,
+          color: Colors.white,
+        ),
       );
 }
