@@ -109,6 +109,13 @@ class _AppHomeState extends State<AppHome> {
     });
   }
 
+  void _handleDrop() {
+    _setStateWithUndo(() {
+      HapticFeedback.lightImpact();
+      _stack.drop();
+    });
+  }
+
   void _applyBinaryOperation(BinaryOperator op) {
     _setStateWithUndo(() {
       HapticFeedback.lightImpact();
@@ -298,7 +305,7 @@ class _AppHomeState extends State<AppHome> {
                               HapticFeedback.selectionClick();
                               _setStateWithUndo(_stack.backspaceCurrent);
                             },
-                            onLongPress: _handleClear,
+                            onLongPress: _handleDrop,
                             child: const Icon(
                               Icons.backspace,
                               semanticLabel: 'Backspace',

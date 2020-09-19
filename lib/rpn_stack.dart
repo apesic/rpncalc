@@ -51,6 +51,13 @@ class RpnStack {
     return null;
   }
 
+  void drop() {
+    _pop();
+    if (stack.isEmpty) {
+      push(EditableItem.blank());
+    }
+  }
+
   void advance() {
     final current = stack.first;
     _realizeStack();
