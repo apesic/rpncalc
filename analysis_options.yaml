@@ -1,7 +1,11 @@
 include: package:pedantic/analysis_options.yaml
 
 analyzer:
-  exclude: [build/**]
+  exclude: [ build/** ]
+  errors:
+    missing_required_param: error
+    missing_return: error
+    todo: warning
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
@@ -161,7 +165,7 @@ linter:
     - unnecessary_null_aware_assignments
 #    - unnecessary_null_checks
     - unnecessary_null_in_if_null_operators
-    - unnecessary_nullable_for_final_variable_declarations
+    #- unnecessary_nullable_for_final_variable_declarations
     - unnecessary_overrides
     - unnecessary_parenthesis
     - unnecessary_raw_strings
@@ -175,7 +179,7 @@ linter:
     - use_function_type_syntax_for_parameters
     - use_is_even_rather_than_modulo
     - use_key_in_widget_constructors
-    - use_late_for_private_fields_and_variables
+    #- use_late_for_private_fields_and_variables
     - use_raw_strings
     - use_rethrow_when_possible
     - use_setters_to_change_properties
