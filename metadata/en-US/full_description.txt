@@ -1,0 +1,12 @@
+A simple, modern RPN calculator that uses RPN.
+
+Reverse Polish Notation is a system where the operators are entered _after_ the operands.
+
+For example, rather than 2 + 2, you would enter:
+
+    2
+    2
+    +
+
+The main benefit is a faster, more accurate interface.
+

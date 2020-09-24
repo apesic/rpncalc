@@ -1,9 +1,9 @@
 # RPNcalc 
-![icon](docs/icon_small.png)
+![icon](metadata/en-US/images/icon_small.png)
 
 ![Flutter CI](https://github.com/apesic/rpncalc/workflows/Flutter%20CI/badge.svg)
 
-A simple, modern RPN calculator. 
+A simple, modern RPN calculator that uses RPN. 
 
 [Reverse Polish Notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation) is a 
 system where the operators are entered _after_ the operands. 
