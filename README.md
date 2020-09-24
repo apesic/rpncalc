@@ -1,4 +1,5 @@
-# RPNcalc
+# RPNcalc 
+![icon](docs/icon_small.png)
 
 ![Flutter CI](https://github.com/apesic/rpncalc/workflows/Flutter%20CI/badge.svg)
 
@@ -20,9 +21,9 @@ The main benefit is a faster, more accurate interface:
 >Additionally, users of reverse Polish calculators made fewer mistakes than for other 
 >types of calculators.
 
-(from the Wikipedia article above):
+(from the Wikipedia article above).
 
-![Screenshot](docs/rpncalc_screenshot_small.png)
+![screenshot](docs/rpncalc_screenshot_small.png)
 
 ## Future work
 - Scientific mode
