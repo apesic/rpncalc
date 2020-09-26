@@ -23,7 +23,7 @@ The main benefit is a faster, more accurate interface:
 
 (from the Wikipedia article above).
 
-![screenshot](docs/rpncalc_screenshot_small.png)
+![screenshot](metadata/en-US/images/phoneScreenshots/1.png)
 
 ## Future work
 - Scientific mode
