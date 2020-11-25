@@ -1,7 +1,5 @@
-# RPNcalc 
-![icon](metadata/en-US/images/icon_small.png)
-
-![Flutter CI](https://github.com/apesic/rpncalc/workflows/Flutter%20CI/badge.svg)
+# ![icon](metadata/en-US/images/icon_small.png) RPNcalc 
+<a href='https://play.google.com/store/apps/details?id=dev.pesic.rpncalc&utm_source=github&pcampaignid=gh1'><img alt='Get it on Google Play' height='75' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
 
 A simple, modern RPN calculator that uses RPN. 
 
@@ -29,3 +27,5 @@ The main benefit is a faster, more accurate interface:
 - Scientific mode
 - Persistent history
 - iOS release
+
+![Flutter CI](https://github.com/apesic/rpncalc/workflows/Flutter%20CI/badge.svg)
