@@ -36,7 +36,7 @@ class RpnStack {
         stack[0] = first.realize();
       }
     }
-    assert(stack.every((element) => element is RealizedItem),
+    assert(stack.every((e) => e is RealizedItem),
         'Every element in stack should be realized.');
   }
 
@@ -98,7 +98,7 @@ class RpnStack {
       return;
     }
     appendNew = true;
-    // If the first item is editable and empty , remove and skip the operation.
+    // If the first item is editable and empty, remove and skip the operation.
     if (first.isEmpty) {
       _pop();
       return;

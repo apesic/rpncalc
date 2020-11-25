@@ -50,7 +50,7 @@ class StackItemWidget extends StatelessWidget {
             switch (value) {
               case 'copy':
                 Clipboard.setData(ClipboardData(text: item.toString())).then(
-                  (_) => Scaffold.of(context).showSnackBar(
+                  (_) => ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Copied to clipboard'),
                       duration: Duration(seconds: 2),
@@ -69,7 +69,7 @@ class StackItemWidget extends StatelessWidget {
                       newVal = int.parse(s);
                     }
                   } on FormatException catch (_) {
-                    Scaffold.of(context).showSnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Clipboard is not a valid number'),
                         backgroundColor: Theme.of(context).errorColor,
