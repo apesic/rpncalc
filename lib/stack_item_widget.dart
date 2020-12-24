@@ -87,25 +87,25 @@ class StackItemWidget extends StatelessWidget {
             }
           });
         },
-        child: Column(
-          children: [
-            IntrinsicHeight(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text('$item',
-                      textAlign: TextAlign.right,
-                      style: GoogleFonts.robotoMono(
-                        textStyle: TextStyle(fontSize: 36, color: color),
-                      )),
-                  if (item is EditableItem)
-                    const Carat()
-                  else
-                    const Padding(padding: EdgeInsets.only(right: 2)),
-                ],
+        child: IntrinsicHeight(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(item.toString(),
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.clip,
+                    softWrap: false,
+                    style: GoogleFonts.robotoMono(
+                      textStyle: TextStyle(fontSize: 32, color: color),
+                    )),
               ),
-            ),
-          ],
+              if (item is EditableItem)
+                const Carat()
+              else
+                const Padding(padding: EdgeInsets.only(right: 2)),
+            ],
+          ),
         ),
       );
 }

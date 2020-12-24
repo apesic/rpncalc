@@ -12,7 +12,6 @@ class NumButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ButtonTheme(
-      height: 85,
       child: FlatButton(
           onPressed: () {
             onPressed(char);
