@@ -5,6 +5,10 @@ import 'package:characters/characters.dart';
 abstract class StackItem {
   final num value = 0;
   final bool isEmpty = false;
+  static const int maxLength = 18;
+
+  // The unformatted characters that represent the value.
+  String toRawString();
 }
 
 class EditableItem implements StackItem {
@@ -23,11 +27,16 @@ class EditableItem implements StackItem {
       } else if (s.contains('.')) {
         return double.parse(s);
       } else {
-        return int.parse(s);
+        try {
+          return int.parse(s);
+          // Try parsing as double in case it's an int overflow.
+        } on FormatException catch (_) {
+          return double.parse(s);
+        }
       }
     } on FormatException catch (e) {
-      log('Error parsing number $s - $e');
-      return 0;
+      log('Error parsing number $s: $e');
+      return double.nan;
     }
   }
 
@@ -55,6 +64,9 @@ class EditableItem implements StackItem {
   }
 
   @override
+  String toRawString() => _chars;
+
+  @override
   String toString() => _chars;
 
   RealizedItem realize() {
@@ -68,11 +80,25 @@ class RealizedItem implements StackItem {
   const RealizedItem(this._value);
 
   final num _value;
+
   @override
   bool get isEmpty => false;
+
   @override
   num get value => _value;
 
   @override
-  String toString() => _value?.toString() ?? '';
+  String toRawString() => _value?.toString() ?? '';
+
+  @override
+  String toString() {
+    if (_value == null) {
+      return '';
+    }
+
+    if (_value.toString().length <= StackItem.maxLength) {
+      return _value.toString();
+    }
+    return _value.toStringAsExponential(StackItem.maxLength - 10);
+  }
 }

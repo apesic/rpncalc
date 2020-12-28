@@ -31,7 +31,7 @@ class StackItemWidget extends StatelessWidget {
                 enabled: !item.isEmpty,
                 value: 'copy',
                 child: Text(
-                  'Copy $item',
+                  'Copy ${item.toRawString()}',
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.fade,
@@ -49,7 +49,7 @@ class StackItemWidget extends StatelessWidget {
           ).then((value) {
             switch (value) {
               case 'copy':
-                Clipboard.setData(ClipboardData(text: item.toString())).then(
+                Clipboard.setData(ClipboardData(text: item.toRawString())).then(
                   (_) => Scaffold.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Copied to clipboard'),
@@ -94,7 +94,7 @@ class StackItemWidget extends StatelessWidget {
               Expanded(
                 child: Text(item.toString(),
                     textAlign: TextAlign.right,
-                    overflow: TextOverflow.clip,
+                    overflow: TextOverflow.fade,
                     softWrap: false,
                     style: GoogleFonts.robotoMono(
                       textStyle: TextStyle(fontSize: 32, color: color),

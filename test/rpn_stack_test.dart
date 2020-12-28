@@ -16,10 +16,7 @@ void main() {
     });
 
     test('characters are appended', () {
-      final s = RpnStack()
-        ..appendCurrent('2')
-        ..appendCurrent('.')
-        ..appendCurrent('1');
+      final s = RpnStack()..appendCurrent('2')..appendCurrent('.')..appendCurrent('1');
       expect(s.length, 1);
       expect(s.first.value, 2.1);
     });
@@ -32,6 +29,17 @@ void main() {
         ..backspaceCurrent();
       expect(s.length, 1);
       expect(s.first.value, 2);
+    });
+
+    test('exceeding max int results in a double', () {
+      final s = RpnStack()..appendCurrent('1');
+      for (var i = 0; i < 30; i++) {
+        s.appendCurrent('0');
+      }
+      s.advance();
+      expect(s.length, 2);
+      expect(s.first.value, 1e+30);
+      expect(s.first.value.runtimeType, double);
     });
 
     test('item is pushed to stack and copied on advance', () {
