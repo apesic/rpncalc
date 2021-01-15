@@ -140,6 +140,17 @@ void main() {
       expect(s.first.runtimeType, RealizedItem);
     });
 
+    test('exponent works', () {
+      final s = RpnStack()
+        ..appendCurrent('2')
+        ..advance()
+        ..appendCurrent('3.2')
+        ..applyBinaryOperation(BinaryOperator.exponent);
+      expect(s.length, 1);
+      expect(s.first.value, 9.18958683997628);
+      expect(s.first.runtimeType, RealizedItem);
+    });
+
     test('binary options use clone of item after advance', () {
       final s = RpnStack()
         ..appendCurrent('3')

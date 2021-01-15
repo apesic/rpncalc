@@ -36,8 +36,7 @@ class RpnStack {
         stack[0] = first.realize();
       }
     }
-    assert(stack.every((e) => e is RealizedItem),
-        'Every element in stack should be realized.');
+    assert(stack.every((e) => e is RealizedItem), 'Every element in stack should be realized.');
   }
 
   void push(StackItem v) {

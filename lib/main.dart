@@ -30,6 +30,7 @@ class RpnCalc extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
       title: appName,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
           textTheme: const TextTheme(button: TextStyle(fontSize: 24)),
           primarySwatch: Colors.orange,
@@ -207,7 +208,7 @@ class _AppHomeState extends State<AppHome> {
                               },
                               child: const Text(
                                 '⇅',
-                                style: TextStyle(fontSize: 20),
+                                style: TextStyle(fontSize: 22),
                               ),
                             ),
                           ),
@@ -293,12 +294,11 @@ class _AppHomeState extends State<AppHome> {
                                             Expanded(
                                               child: FlatButton(
                                                 onPressed: () {
-                                                  HapticFeedback.selectionClick();
-                                                  _setStateWithUndo(_stack.inverse);
+                                                  _applyBinaryOperation(BinaryOperator.exponent);
                                                 },
                                                 child: const Text(
-                                                  '1/X',
-                                                  style: TextStyle(fontSize: 18),
+                                                  'yˣ',
+                                                  style: TextStyle(fontSize: 20),
                                                 ),
                                               ),
                                             ),
