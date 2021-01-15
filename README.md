@@ -15,16 +15,18 @@ For example, rather than 2 + 2, you would enter:
 
 The main benefit is a faster, more accurate interface:
 
->Reverse Polish calculators do not need expressions to be 
->parenthesized, so fewer operations need to be entered to perform typical calculations. 
->Additionally, users of reverse Polish calculators made fewer mistakes than for other 
->types of calculators.
+> Reverse Polish calculators do not need expressions to be
+> parenthesized, so fewer operations need to be entered to perform typical calculations.
+> Additionally, users of reverse Polish calculators made fewer mistakes than for other
+> types of calculators.
 
 (from the Wikipedia article above).
 
-![screenshot](metadata/en-US/images/phoneScreenshots/1.png)
+<img src="metadata/en-US/images/phoneScreenshots/1.png" alt="Screenshot 1" height="540">
+<img src="metadata/en-US/images/phoneScreenshots/2.png" alt="Screenshot 2" height="540">
 
 ## Future work
+
 - Scientific mode
 - Persistent history
 - iOS release
