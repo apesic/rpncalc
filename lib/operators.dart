@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
-typedef BinaryOperation = num Function(num a, num b);
+import 'package:rational/rational.dart';
+
+typedef BinaryOperation = Rational Function(Rational a, Rational b);
 
 enum BinaryOperator { add, subtract, multiply, divide, exponent }
 
@@ -9,5 +11,12 @@ Map<BinaryOperator, BinaryOperation> operations = <BinaryOperator, BinaryOperati
   BinaryOperator.subtract: (a, b) => a - b,
   BinaryOperator.multiply: (a, b) => a * b,
   BinaryOperator.divide: (a, b) => a / b,
-  BinaryOperator.exponent: math.pow,
+  BinaryOperator.exponent: (a, b) {
+    // Rational only supports positive integer exponents.
+    if (b.scale == 0 && !b.isNegative) {
+      return a.pow(b.toInt());
+    }
+    final res = math.pow(a.toDouble(), b.toDouble());
+    return Rational.parse(res.toString());
+  },
 };

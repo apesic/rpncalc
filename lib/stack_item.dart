@@ -1,9 +1,10 @@
 import 'dart:developer';
 
 import 'package:characters/characters.dart';
+import 'package:rational/rational.dart';
 
 abstract class StackItem {
-  final num value = 0;
+  final Rational value = Rational.zero;
   final bool isEmpty = false;
   static const int maxLength = 18;
 
@@ -20,28 +21,20 @@ class EditableItem implements StackItem {
   String _chars = '';
   bool isEdited = false;
 
-  num _parseNum(String s) {
+  Rational _parseNum(String s) {
     try {
       if (s == '') {
-        return 0;
-      } else if (s.contains('.')) {
-        return double.parse(s);
-      } else {
-        try {
-          return int.parse(s);
-          // Try parsing as double in case it's an int overflow.
-        } on FormatException catch (_) {
-          return double.parse(s);
-        }
+        return Rational.zero;
       }
+      return Rational.parse(s);
     } on FormatException catch (e) {
       log('Error parsing number $s: $e');
-      return double.nan;
+      return Rational.zero;
     }
   }
 
   @override
-  num get value => _parseNum(_chars);
+  Rational get value => _parseNum(_chars);
 
   @override
   bool get isEmpty => _chars.isEmpty;
@@ -79,16 +72,16 @@ class EditableItem implements StackItem {
 class RealizedItem implements StackItem {
   const RealizedItem(this._value);
 
-  final num _value;
+  final Rational _value;
 
   @override
   bool get isEmpty => false;
 
   @override
-  num get value => _value;
+  Rational get value => _value;
 
   @override
-  String toRawString() => _value?.toString() ?? '';
+  String toRawString() => _value?.toDecimalString() ?? '';
 
   @override
   String toString() {
@@ -96,8 +89,9 @@ class RealizedItem implements StackItem {
       return '';
     }
 
-    if (_value.toString().length <= StackItem.maxLength) {
-      return _value.toString();
+    final s = _value.toDecimalString();
+    if (s.length <= StackItem.maxLength) {
+      return s;
     }
     return _value.toStringAsExponential(StackItem.maxLength - 10);
   }

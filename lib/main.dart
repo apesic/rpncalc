@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info/package_info.dart';
+import 'package:rational/rational.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'binary_operator_widget.dart';
@@ -123,7 +124,7 @@ class _AppHomeState extends State<AppHome> {
     });
   }
 
-  void _onPaste(int index, num newVal) {
+  void _onPaste(int index, Rational newVal) {
     _setStateWithUndo(() {
       _stack.replaceAt(index, newVal);
     });

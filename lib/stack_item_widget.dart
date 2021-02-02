@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rational/rational.dart';
 
 import 'stack_item.dart';
 
@@ -13,7 +14,7 @@ class StackItemWidget extends StatefulWidget {
     Key key,
   }) : super(key: key);
 
-  final void Function(num newVal) onPaste;
+  final void Function(Rational newVal) onPaste;
   final void Function() onRemove;
   final StackItem item;
   final Color color;
@@ -75,14 +76,10 @@ class _StackItemWidgetState extends State<StackItemWidget> {
                   break;
                 case 'paste':
                   Clipboard.getData('text/plain').then((value) {
-                    num newVal;
+                    Rational newVal;
                     final s = value.text;
                     try {
-                      if (s.contains('.')) {
-                        newVal = double.parse(s);
-                      } else {
-                        newVal = int.parse(s);
-                      }
+                      newVal = Rational.parse(s);
                     } on FormatException catch (_) {
                       Scaffold.of(context).showSnackBar(
                         SnackBar(

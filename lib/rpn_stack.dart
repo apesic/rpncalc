@@ -1,3 +1,5 @@
+import 'package:rational/rational.dart';
+
 import 'operators.dart';
 import 'stack_item.dart';
 
@@ -5,6 +7,7 @@ class RpnStack {
   RpnStack() {
     stack.add(EditableItem.blank());
   }
+
   RpnStack.clone(RpnStack source) {
     for (final o in source.stack) {
       StackItem clone;
@@ -17,12 +20,16 @@ class RpnStack {
     }
     appendNew = source.appendNew;
   }
+
   final List<StackItem> stack = [];
+
   // When true, the next append operation should create a new item.
   bool appendNew = false;
 
   int get length => stack.length;
+
   StackItem get first => stack[0];
+
   bool get isEmpty => length == 1 && first.isEmpty;
 
   StackItem operator [](int i) => stack[i];
@@ -112,26 +119,26 @@ class RpnStack {
 
   void inverse() {
     final v = first.value;
-    if (v != null && v != 0) {
-      stack[0] = RealizedItem(1 / v);
+    if (v != null && v != Rational.zero) {
+      stack[0] = RealizedItem(Rational.one / v);
     }
   }
 
   void reverseSign() {
     final v = first.value;
-    stack[0] = RealizedItem(v * -1);
+    stack[0] = RealizedItem(v * Rational.fromInt(-1));
   }
 
   void percent() {
-    num res;
+    Rational res;
     switch (stack.length) {
       case 0:
         return;
       case 1:
-        res = _pop().value / 100;
+        res = _pop().value / Rational.fromInt(100);
         break;
       default:
-        res = (_pop().value / 100) * _pop().value;
+        res = (_pop().value / Rational.fromInt(100)) * _pop().value;
         break;
     }
     push(RealizedItem(res));
@@ -179,7 +186,7 @@ class RpnStack {
     stack.removeAt(index);
   }
 
-  void replaceAt(int index, num newVal) {
+  void replaceAt(int index, Rational newVal) {
     stack[index] = RealizedItem(newVal);
   }
 }

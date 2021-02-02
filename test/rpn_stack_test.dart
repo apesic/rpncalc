@@ -1,3 +1,4 @@
+import 'package:rational/rational.dart';
 import 'package:rpncalc/operators.dart';
 import 'package:rpncalc/rpn_stack.dart';
 import 'package:rpncalc/stack_item.dart';
@@ -18,7 +19,7 @@ void main() {
     test('characters are appended', () {
       final s = RpnStack()..appendCurrent('2')..appendCurrent('.')..appendCurrent('1');
       expect(s.length, 1);
-      expect(s.first.value, 2.1);
+      expect(s.first.value, Rational.parse('2.1'));
     });
 
     test('characters can be removed', () {
@@ -28,18 +29,7 @@ void main() {
         ..appendCurrent('1')
         ..backspaceCurrent();
       expect(s.length, 1);
-      expect(s.first.value, 2);
-    });
-
-    test('exceeding max int results in a double', () {
-      final s = RpnStack()..appendCurrent('1');
-      for (var i = 0; i < 30; i++) {
-        s.appendCurrent('0');
-      }
-      s.advance();
-      expect(s.length, 2);
-      expect(s.first.value, 1e+30);
-      expect(s.first.value.runtimeType, double);
+      expect(s.first.value, Rational.fromInt(2));
     });
 
     test('item is pushed to stack and copied on advance', () {
@@ -49,7 +39,7 @@ void main() {
         ..appendCurrent('1')
         ..advance();
       expect(s.length, 2);
-      expect(s.first.value, 2.1);
+      expect(s.first.value, Rational.parse('2.1'));
       expect(s.first.runtimeType, EditableItem);
     });
   });
@@ -61,7 +51,7 @@ void main() {
         ..appendCurrent('0')
         ..percent();
       expect(s.length, 1);
-      expect(s.first.value, 0.2);
+      expect(s.first.value, Rational.parse('0.2'));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -74,7 +64,7 @@ void main() {
         ..appendCurrent('0')
         ..percent();
       expect(s.length, 1);
-      expect(s.first.value, 10);
+      expect(s.first.value, Rational.fromInt(10));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -83,7 +73,7 @@ void main() {
         ..appendCurrent('2')
         ..reverseSign();
       expect(s.length, 1);
-      expect(s.first.value, -2);
+      expect(s.first.value, Rational.fromInt(-2));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -92,7 +82,7 @@ void main() {
         ..appendCurrent('2')
         ..inverse();
       expect(s.length, 1);
-      expect(s.first.value, 0.5);
+      expect(s.first.value, Rational.parse('0.5'));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -103,7 +93,7 @@ void main() {
         ..appendCurrent('3.2')
         ..applyBinaryOperation(BinaryOperator.add);
       expect(s.length, 1);
-      expect(s.first.value, 5.2);
+      expect(s.first.value, Rational.parse('5.2'));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -114,8 +104,18 @@ void main() {
         ..appendCurrent('3')
         ..applyBinaryOperation(BinaryOperator.subtract);
       expect(s.length, 1);
-      expect(s.first.value, -1);
+      expect(s.first.value, Rational.fromInt(-1));
       expect(s.first.runtimeType, RealizedItem);
+    });
+
+    test('floating point math is correct', () {
+      final s = RpnStack()
+        ..appendCurrent('1.1')
+        ..advance()
+        ..appendCurrent('0.5')
+        ..applyBinaryOperation(BinaryOperator.subtract);
+      expect(s.length, 1);
+      expect(s.first.value, Rational.parse('0.6'));
     });
 
     test('multiplication works', () {
@@ -125,7 +125,7 @@ void main() {
         ..appendCurrent('3.2')
         ..applyBinaryOperation(BinaryOperator.multiply);
       expect(s.length, 1);
-      expect(s.first.value, 6.4);
+      expect(s.first.value, Rational.parse('6.4'));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -136,7 +136,7 @@ void main() {
         ..appendCurrent('3.2')
         ..applyBinaryOperation(BinaryOperator.divide);
       expect(s.length, 1);
-      expect(s.first.value, 0.625);
+      expect(s.first.value, Rational.parse('0.625'));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -147,7 +147,18 @@ void main() {
         ..appendCurrent('3.2')
         ..applyBinaryOperation(BinaryOperator.exponent);
       expect(s.length, 1);
-      expect(s.first.value, 9.18958683997628);
+      expect(s.first.value, Rational.parse('9.18958683997628'));
+      expect(s.first.runtimeType, RealizedItem);
+    });
+
+    test('irrational numbers work', () {
+      final s = RpnStack()
+        ..appendCurrent('2')
+        ..advance()
+        ..appendCurrent('0.5')
+        ..applyBinaryOperation(BinaryOperator.exponent);
+      expect(s.length, 1);
+      expect(s.first.value.toStringAsPrecision(10), '1.414213562');
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -157,7 +168,7 @@ void main() {
         ..advance()
         ..applyBinaryOperation(BinaryOperator.multiply);
       expect(s.length, 1);
-      expect(s.first.value, 9);
+      expect(s.first.value, Rational.fromInt(9));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -168,7 +179,7 @@ void main() {
         ..backspaceCurrent()
         ..applyBinaryOperation(BinaryOperator.divide);
       expect(s.length, 1);
-      expect(s.first.value, 2);
+      expect(s.first.value, Rational.fromInt(2));
       expect(s.first.runtimeType, RealizedItem);
     });
   });
@@ -203,8 +214,8 @@ void main() {
         ..appendCurrent('2')
         ..swap();
       expect(s.length, 2);
-      expect(s.first.value, 1);
-      expect(s[1].value, 2);
+      expect(s.first.value, Rational.one);
+      expect(s[1].value, Rational.fromInt(2));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -217,9 +228,9 @@ void main() {
         ..appendCurrent('3')
         ..rotateDown();
       expect(s.length, 3);
-      expect(s.first.value, 2);
-      expect(s[1].value, 1);
-      expect(s[2].value, 3);
+      expect(s.first.value, Rational.fromInt(2));
+      expect(s[1].value, Rational.one);
+      expect(s[2].value, Rational.fromInt(3));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -232,9 +243,9 @@ void main() {
         ..appendCurrent('3')
         ..rotateUp();
       expect(s.length, 3);
-      expect(s.first.value, 1);
-      expect(s[1].value, 3);
-      expect(s[2].value, 2);
+      expect(s.first.value, Rational.one);
+      expect(s[1].value, Rational.fromInt(3));
+      expect(s[2].value, Rational.fromInt(2));
       expect(s.first.runtimeType, RealizedItem);
     });
   });
