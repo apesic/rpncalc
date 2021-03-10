@@ -27,14 +27,20 @@ void main() {
 }
 
 class RpnCalc extends StatelessWidget {
-  const RpnCalc({Key key}) : super(key: key);
+  const RpnCalc({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) => MaterialApp(
       title: appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          textTheme: const TextTheme(button: TextStyle(fontSize: 24)),
-          primarySwatch: Colors.orange,
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              shape: const ContinuousRectangleBorder(),
+              primary: Colors.white,
+              textStyle: const TextStyle(fontSize: 24),
+            ),
+          ),
+          primarySwatch: Colors.purple,
           brightness: Brightness.dark,
           snackBarTheme: SnackBarThemeData(
             backgroundColor: Colors.grey[800],
@@ -48,7 +54,7 @@ class RpnCalc extends StatelessWidget {
 }
 
 class AppHome extends StatefulWidget {
-  const AppHome({Key key}) : super(key: key);
+  const AppHome({Key? key}) : super(key: key);
 
   @override
   _AppHomeState createState() => _AppHomeState();
@@ -161,7 +167,7 @@ class _AppHomeState extends State<AppHome> {
                                 itemCount: _stack.length,
                                 itemBuilder: (context, index) {
                                   final item = _stack[index];
-                                  var color = Colors.white;
+                                  Color? color = Colors.white;
                                   if (index == 0) {
                                     if (!_stack.appendNew && item is RealizedItem ||
                                         (item is EditableItem && !item.isEdited)) {
@@ -199,63 +205,78 @@ class _AppHomeState extends State<AppHome> {
                     Flexible(
                       child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         Expanded(
-                          child: ButtonTheme(
-                            shape: const ContinuousRectangleBorder(),
-                            child: FlatButton(
-                              color: Colors.grey[700],
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.swap);
-                              },
-                              child: const Text(
-                                '⇅',
-                                style: TextStyle(fontSize: 22),
-                              ),
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.grey[700],
+                            ),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _setStateWithUndo(_stack.swap);
+                            },
+                            child: const Icon(
+                              Icons.swap_vert_sharp,
+                              size: 22,
+                              semanticLabel: 'Swap',
                             ),
                           ),
                         ),
                         Expanded(
-                          child: ButtonTheme(
-                            shape: const ContinuousRectangleBorder(),
-                            child: FlatButton(
-                              color: Colors.grey[700],
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.rotateUp);
-                              },
-                              child: const Text(
-                                'R↑',
-                                style: TextStyle(fontSize: 18),
-                              ),
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.grey[700],
+                              textStyle: const TextStyle(fontSize: 18),
+                            ),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _setStateWithUndo(_stack.rotateUp);
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text('R'),
+                                Icon(
+                                  Icons.arrow_upward_sharp,
+                                  size: 16,
+                                )
+                              ],
                             ),
                           ),
                         ),
                         Expanded(
-                          child: ButtonTheme(
-                            shape: const ContinuousRectangleBorder(),
-                            child: FlatButton(
-                              color: Colors.grey[700],
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.rotateDown);
-                              },
-                              child: const Text(
-                                'R↓',
-                                style: TextStyle(fontSize: 18),
-                              ),
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                                backgroundColor: Colors.grey[700],
+                                textStyle: const TextStyle(fontSize: 18)),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _setStateWithUndo(_stack.rotateDown);
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text('R'),
+                                Icon(
+                                  Icons.arrow_downward_sharp,
+                                  size: 16,
+                                )
+                              ],
                             ),
                           ),
                         ),
                         Expanded(
-                          child: ButtonTheme(
-                            // height: 30,
-                            shape: const ContinuousRectangleBorder(),
-                            child: FlatButton(
-                              color: Colors.blueGrey[600],
-                              onPressed: _undoBuffer.isEmpty ? null : _undo,
-                              disabledColor: Colors.blueGrey[700],
-                              child: const Icon(Icons.undo),
+                          child: TextButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                (states) {
+                                  if (states.contains(MaterialState.disabled)) {
+                                    return Colors.blueGrey[700]!;
+                                  }
+                                  return Colors.grey[600]!;
+                                },
+                              ),
                             ),
+                            onPressed: _undoBuffer.isEmpty ? null : _undo,
+                            child: const Icon(Icons.undo),
                           ),
                         ),
                       ]),
@@ -275,13 +296,14 @@ class _AppHomeState extends State<AppHome> {
                                   Expanded(
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        border: Border(bottom: BorderSide(color: Colors.grey[700])),
+                                        border:
+                                            Border(bottom: BorderSide(color: Colors.grey[700]!)),
                                       ),
                                       child: Row(
                                           crossAxisAlignment: CrossAxisAlignment.stretch,
                                           children: [
                                             Expanded(
-                                              child: FlatButton(
+                                              child: TextButton(
                                                 onPressed: () {
                                                   HapticFeedback.selectionClick();
                                                   _setStateWithUndo(_stack.reverseSign);
@@ -293,7 +315,7 @@ class _AppHomeState extends State<AppHome> {
                                               ),
                                             ),
                                             Expanded(
-                                              child: FlatButton(
+                                              child: TextButton(
                                                 onPressed: () {
                                                   _applyBinaryOperation(BinaryOperator.exponent);
                                                 },
@@ -304,7 +326,7 @@ class _AppHomeState extends State<AppHome> {
                                               ),
                                             ),
                                             Expanded(
-                                              child: FlatButton(
+                                              child: TextButton(
                                                 onPressed: () {
                                                   HapticFeedback.selectionClick();
                                                   _setStateWithUndo(_stack.percent);
@@ -329,8 +351,11 @@ class _AppHomeState extends State<AppHome> {
                                         children: [
                                           for (final n in row)
                                             Expanded(
-                                                child: NumButtonWidget(
-                                                    char: n.toString(), onPressed: _handleAppend))
+                                              child: NumButtonWidget(
+                                                char: n.toString(),
+                                                onPressed: _handleAppend,
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
@@ -342,10 +367,14 @@ class _AppHomeState extends State<AppHome> {
                                               child: NumButtonWidget(
                                                   char: '0', onPressed: _handleAppend)),
                                           Expanded(
-                                              child: NumButtonWidget(
-                                                  char: '.', onPressed: _handleAppend)),
+                                            child: NumButtonWidget(
+                                              char: '.',
+                                              onPressed: _handleAppend,
+                                              fontSize: 30,
+                                            ),
+                                          ),
                                           Expanded(
-                                            child: FlatButton(
+                                            child: TextButton(
                                               onPressed: () {
                                                 HapticFeedback.selectionClick();
                                                 _setStateWithUndo(_stack.backspaceCurrent);
@@ -369,18 +398,16 @@ class _AppHomeState extends State<AppHome> {
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: ButtonTheme(
-                                    // height: 64,
-                                    shape: const ContinuousRectangleBorder(),
-                                    child: FlatButton(
-                                      color: Colors.blueGrey[800],
-                                      onPressed: (_stack.isEmpty || _stack.first.isEmpty)
-                                          ? _handleClearAll
-                                          : _handleClear,
-                                      onLongPress: _handleClearAll,
-                                      child:
-                                          Text(_stack.isEmpty || _stack.first.isEmpty ? 'AC' : 'C'),
+                                  child: TextButton(
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.blueGrey[800],
                                     ),
+                                    onPressed: (_stack.isEmpty || _stack.first!.isEmpty)
+                                        ? _handleClearAll
+                                        : _handleClear,
+                                    onLongPress: _handleClearAll,
+                                    child:
+                                        Text(_stack.isEmpty || _stack.first!.isEmpty ? 'AC' : 'C'),
                                   ),
                                 ),
                                 Expanded(
@@ -413,16 +440,16 @@ class _AppHomeState extends State<AppHome> {
                                 ),
                                 Expanded(
                                   flex: 4,
-                                  child: ButtonTheme(
-                                    shape: const ContinuousRectangleBorder(),
-                                    child: FlatButton(
-                                      color: Colors.orangeAccent,
-                                      onPressed: _handleAdvance,
-                                      child: const Icon(
-                                        Icons.keyboard_return,
-                                        size: 34,
-                                        semanticLabel: 'Enter',
-                                      ),
+                                  child: TextButton(
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.orangeAccent,
+                                      primary: Colors.black,
+                                    ),
+                                    onPressed: _handleAdvance,
+                                    child: const Icon(
+                                      Icons.keyboard_return,
+                                      size: 35,
+                                      semanticLabel: 'Enter',
                                     ),
                                   ),
                                 ),

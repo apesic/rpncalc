@@ -13,7 +13,7 @@ abstract class StackItem {
 }
 
 class EditableItem implements StackItem {
-  EditableItem(StackItem v) {
+  EditableItem(StackItem? v) {
     _chars = v.toString();
   }
   EditableItem.blank();
@@ -64,7 +64,6 @@ class EditableItem implements StackItem {
 
   RealizedItem realize() {
     final v = value;
-    assert(v != null, 'Value should not be null');
     return RealizedItem(v);
   }
 }
@@ -81,14 +80,10 @@ class RealizedItem implements StackItem {
   Rational get value => _value;
 
   @override
-  String toRawString() => _value?.toDecimalString() ?? '';
+  String toRawString() => _value.toDecimalString();
 
   @override
   String toString() {
-    if (_value == null) {
-      return '';
-    }
-
     final s = _value.toDecimalString();
     if (s.length <= StackItem.maxLength) {
       return s;

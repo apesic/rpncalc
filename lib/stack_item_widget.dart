@@ -7,17 +7,17 @@ import 'stack_item.dart';
 
 class StackItemWidget extends StatefulWidget {
   const StackItemWidget({
-    @required this.onPaste,
-    @required this.item,
-    @required this.color,
-    @required this.onRemove,
-    Key key,
+    required this.onPaste,
+    required this.item,
+    required this.color,
+    required this.onRemove,
+    Key? key,
   }) : super(key: key);
 
   final void Function(Rational newVal) onPaste;
   final void Function() onRemove;
-  final StackItem item;
-  final Color color;
+  final StackItem? item;
+  final Color? color;
 
   @override
   _StackItemWidgetState createState() => _StackItemWidgetState();
@@ -41,10 +41,10 @@ class _StackItemWidgetState extends State<StackItemWidget> {
               position: const RelativeRect.fromLTRB(100, 100, 100, 100),
               items: [
                 PopupMenuItem<String>(
-                  enabled: !widget.item.isEmpty,
+                  enabled: !widget.item!.isEmpty,
                   value: 'copy',
                   child: Text(
-                    'Copy ${widget.item.toRawString()}',
+                    'Copy ${widget.item!.toRawString()}',
                     maxLines: 1,
                     softWrap: false,
                     overflow: TextOverflow.fade,
@@ -65,8 +65,8 @@ class _StackItemWidgetState extends State<StackItemWidget> {
               });
               switch (value) {
                 case 'copy':
-                  Clipboard.setData(ClipboardData(text: widget.item.toRawString())).then(
-                    (_) => Scaffold.of(context).showSnackBar(
+                  Clipboard.setData(ClipboardData(text: widget.item!.toRawString())).then(
+                    (_) => ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Copied to clipboard'),
                         duration: Duration(seconds: 2),
@@ -77,11 +77,11 @@ class _StackItemWidgetState extends State<StackItemWidget> {
                 case 'paste':
                   Clipboard.getData('text/plain').then((value) {
                     Rational newVal;
-                    final s = value.text;
+                    final s = value!.text!;
                     try {
                       newVal = Rational.parse(s);
                     } on FormatException catch (_) {
-                      Scaffold.of(context).showSnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: const Text('Clipboard is not a valid number'),
                           backgroundColor: Theme.of(context).errorColor,
@@ -125,14 +125,14 @@ class _StackItemWidgetState extends State<StackItemWidget> {
 
 class Carat extends StatefulWidget {
   @override
-  const Carat({Key key}) : super(key: key);
+  const Carat({Key? key}) : super(key: key);
 
   @override
   _CaratState createState() => _CaratState();
 }
 
 class _CaratState extends State<Carat> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
+  late AnimationController _controller;
   final duration = const Duration(milliseconds: 500);
 
   @override

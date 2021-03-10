@@ -10,7 +10,7 @@ class RpnStack {
 
   RpnStack.clone(RpnStack source) {
     for (final o in source.stack) {
-      StackItem clone;
+      StackItem? clone;
       if (o is EditableItem) {
         clone = EditableItem(o);
       } else if (o is RealizedItem) {
@@ -21,18 +21,18 @@ class RpnStack {
     appendNew = source.appendNew;
   }
 
-  final List<StackItem> stack = [];
+  final List<StackItem?> stack = [];
 
   // When true, the next append operation should create a new item.
   bool appendNew = false;
 
   int get length => stack.length;
 
-  StackItem get first => stack[0];
+  StackItem? get first => stack[0];
 
-  bool get isEmpty => length == 1 && first.isEmpty;
+  bool get isEmpty => length == 1 && first!.isEmpty;
 
-  StackItem operator [](int i) => stack[i];
+  StackItem? operator [](int i) => stack[i];
 
   void _realizeStack() {
     final first = this.first;
@@ -46,11 +46,11 @@ class RpnStack {
     assert(stack.every((e) => e is RealizedItem), 'Every element in stack should be realized.');
   }
 
-  void push(StackItem v) {
+  void push(StackItem? v) {
     stack.insert(0, v);
   }
 
-  StackItem _pop() {
+  StackItem? _pop() {
     if (stack.isNotEmpty) {
       return stack.removeAt(0);
     }
@@ -105,27 +105,27 @@ class RpnStack {
     }
     appendNew = true;
     // If the first item is editable and empty, remove and skip the operation.
-    if (first.isEmpty) {
+    if (first!.isEmpty) {
       _pop();
       return;
     }
     _realizeStack();
-    final fn = operations[o];
-    final b = _pop().value;
-    final a = _pop().value;
+    final fn = operations[o]!;
+    final b = _pop()!.value;
+    final a = _pop()!.value;
     final res = fn(a, b);
     push(RealizedItem(res));
   }
 
   void inverse() {
-    final v = first.value;
-    if (v != null && v != Rational.zero) {
+    final v = first!.value;
+    if (v != Rational.zero) {
       stack[0] = RealizedItem(Rational.one / v);
     }
   }
 
   void reverseSign() {
-    final v = first.value;
+    final v = first!.value;
     stack[0] = RealizedItem(v * Rational.fromInt(-1));
   }
 
@@ -135,10 +135,10 @@ class RpnStack {
       case 0:
         return;
       case 1:
-        res = _pop().value / Rational.fromInt(100);
+        res = _pop()!.value / Rational.fromInt(100);
         break;
       default:
-        res = (_pop().value / Rational.fromInt(100)) * _pop().value;
+        res = (_pop()!.value / Rational.fromInt(100)) * _pop()!.value;
         break;
     }
     push(RealizedItem(res));
