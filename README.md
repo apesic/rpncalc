@@ -2,7 +2,7 @@
 <a href='https://play.google.com/store/apps/details?id=dev.pesic.rpncalc&utm_source=github&pcampaignid=gh1'><img alt='Get it on Google Play' height='75' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
 <a href="https://f-droid.org/packages/dev.pesic.rpncalc"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="75"> </a>
 
-A simple, modern RPN calculator that uses RPN.
+A simple, modern calculator that uses RPN.
 
 [Reverse Polish Notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation) is a 
 system where the operators are entered _after_ the operands. 
@@ -27,8 +27,9 @@ The main benefit is a faster, more accurate interface:
 
 ## Future work
 
-- Scientific mode
+- Scientific mode (trig functions, logarithms, etc.)
 - Persistent history
 - iOS release
+- macOS version
 
 ![Flutter CI](https://github.com/apesic/rpncalc/workflows/Flutter%20CI/badge.svg)
