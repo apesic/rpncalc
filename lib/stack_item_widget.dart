@@ -64,14 +64,14 @@ class _StackItemWidgetState extends State<StackItemWidget> {
               });
               switch (value) {
                 case 'copy':
-                  Clipboard.setData(ClipboardData(text: widget.item.toRawString())).then(
-                    (_) => Scaffold.of(context).showSnackBar(
+                  /* Clipboard.setData(ClipboardData(text: widget.item.toRawString())).then(
+                    (_) => Scaffold.of(context). showSnackBar(
                       const SnackBar(
                         content: Text('Copied to clipboard'),
                         duration: Duration(seconds: 2),
                       ),
                     ),
-                  );
+                  ); */
                   break;
                 case 'paste':
                   Clipboard.getData('text/plain').then((value) {
@@ -84,13 +84,13 @@ class _StackItemWidgetState extends State<StackItemWidget> {
                         newVal = int.parse(s);
                       }
                     } on FormatException catch (_) {
-                      Scaffold.of(context).showSnackBar(
+                      /* Scaffold.of(context).showSnackBar(
                         SnackBar(
                           content: const Text('Clipboard is not a valid number'),
                           backgroundColor: Theme.of(context).errorColor,
                           duration: const Duration(seconds: 3),
                         ),
-                      );
+                      ); */
                       return 0;
                     }
                     widget.onPaste(newVal);

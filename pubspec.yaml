@@ -20,18 +20,16 @@ environment:
   flutter: ">=1.22.4"
 
 dependencies:
+  characters:
   flutter:
     sdk: flutter
-  google_fonts: ^1.1.1
-  characters: ^1.0.0
-  package_info: ^0.4.3+2
-  url_launcher: ^5.7.10
+  google_fonts:
+  package_info_plus:
+  url_launcher:
 
 dev_dependencies:
+  flutter_launcher_icons:
   test:
-  flutter_test:
-    sdk: flutter
-  flutter_launcher_icons: ^0.8.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
