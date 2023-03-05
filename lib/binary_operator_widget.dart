@@ -15,9 +15,12 @@ class BinaryOperatorWidget extends StatelessWidget {
   final Function(BinaryOperator op) onPressed;
 
   @override
-  Widget build(BuildContext context) => FlatButton(
-        shape: const ContinuousRectangleBorder(),
-        color: Colors.grey[800],
+  Widget build(BuildContext context) => ElevatedButton(
+        /* shape: const ContinuousRectangleBorder(),
+        color: Colors.grey[800], */
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blueGrey[900],
+        ),
         onPressed: () {
           onPressed(op);
         },
