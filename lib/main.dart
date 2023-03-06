@@ -1,13 +1,12 @@
-import 'dart:ui';
+import 'dart:developer';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rational/rational.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'binary_operator_widget.dart';
 import 'num_button_widget.dart';
@@ -36,7 +35,7 @@ class RpnCalc extends StatelessWidget {
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
               shape: const ContinuousRectangleBorder(),
-              primary: Colors.white,
+              foregroundColor: Colors.white,
               textStyle: const TextStyle(fontSize: 24),
             ),
           ),
@@ -443,7 +442,7 @@ class _AppHomeState extends State<AppHome> {
                                   child: TextButton(
                                     style: TextButton.styleFrom(
                                       backgroundColor: Colors.orangeAccent,
-                                      primary: Colors.black,
+                                      foregroundColor: Colors.black,
                                     ),
                                     onPressed: _handleAdvance,
                                     child: const Icon(
@@ -490,12 +489,12 @@ Future<void> _showAboutPage(BuildContext context) async {
               ),
               TextSpan(
                 text: 'Reverse Polish Notation',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () async {
                     const url = 'https://en.wikipedia.org/wiki/Reverse_Polish_notation';
-                    if (await canLaunch(url)) {
-                      await launch(url);
+                    if (await canLaunchUrlString(url)) {
+                      await launchUrlString(url);
                     }
                   },
               ),
@@ -505,12 +504,12 @@ Future<void> _showAboutPage(BuildContext context) async {
               ),
               TextSpan(
                 text: 'https://github.com/apesic/rpncalc',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () async {
                     const url = 'https://github.com/apesic/rpncalc';
-                    if (await canLaunch(url)) {
-                      await launch(url);
+                    if (await canLaunchUrlString(url)) {
+                      await launchUrlString(url);
                     }
                   },
               ),

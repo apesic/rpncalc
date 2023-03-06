@@ -13,9 +13,13 @@ Map<BinaryOperator, BinaryOperation> operations = <BinaryOperator, BinaryOperati
   BinaryOperator.divide: (a, b) => a / b,
   BinaryOperator.exponent: (a, b) {
     // Rational only supports positive integer exponents.
-    if (b.scale == 0 && !b.isNegative) {
-      return a.pow(b.toInt());
+    if (b.isInteger && b > Rational.zero) {
+      final power = b.toBigInt();
+      if (power.isValidInt) {
+        return a.pow(power.toInt());
+      }
     }
+
     final res = math.pow(a.toDouble(), b.toDouble());
     return Rational.parse(res.toString());
   },

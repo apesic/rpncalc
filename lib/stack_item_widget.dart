@@ -84,7 +84,7 @@ class _StackItemWidgetState extends State<StackItemWidget> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: const Text('Clipboard is not a valid number'),
-                          backgroundColor: Theme.of(context).errorColor,
+                          backgroundColor: Theme.of(context).colorScheme.error,
                           duration: const Duration(seconds: 3),
                         ),
                       );
