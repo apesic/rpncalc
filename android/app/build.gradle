@@ -44,7 +44,7 @@ android {
 
     defaultConfig {
         applicationId "dev.pesic.rpncalc"
-        minSdkVersion 16
+        minSdkVersion 22
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
