@@ -87,8 +87,10 @@ class AppHomeState extends State<AppHome> {
 
   void _handleAppend(String c) {
     setState(() {
-      HapticFeedback.selectionClick();
-      _stack.appendCurrent(c);
+      final ok = _stack.append(c);
+      if (ok) {
+        HapticFeedback.selectionClick();
+      }
     });
   }
 
@@ -122,11 +124,11 @@ class AppHomeState extends State<AppHome> {
 
   void _applyBinaryOperation(BinaryOperator op) {
     _setStateWithUndo(() {
-      HapticFeedback.lightImpact();
       final ok = _stack.applyBinaryOperation(op);
-      if (!ok) {
-        // TODO(alexei): provide visual feedback if !ok (pulse stack background?)
+      if (ok) {
+        HapticFeedback.lightImpact();
       }
+      // TODO(alexei): provide visual feedback if !ok (pulse stack background?)
     });
   }
 
@@ -167,11 +169,12 @@ class AppHomeState extends State<AppHome> {
                                 itemCount: _stack.length,
                                 itemBuilder: (context, index) {
                                   final item = _stack[index];
-                                  Color? color = Colors.white;
+                                  var color = Colors.white;
                                   if (index == 0) {
                                     if (!_stack.appendNew && item is RealizedItem ||
                                         (item is EditableItem && !item.isEdited)) {
-                                      color = Colors.grey[800];
+                                      // XXX
+                                      color = Colors.grey[800]!;
                                     } else if (!_stack.appendNew) {
                                       color = Colors.orangeAccent;
                                     }
@@ -381,7 +384,7 @@ class AppHomeState extends State<AppHome> {
                                             child: TextButton(
                                               onPressed: () {
                                                 HapticFeedback.selectionClick();
-                                                _setStateWithUndo(_stack.backspaceCurrent);
+                                                _setStateWithUndo(_stack.backspace);
                                               },
                                               onLongPress: _handleDrop,
                                               child: const Icon(

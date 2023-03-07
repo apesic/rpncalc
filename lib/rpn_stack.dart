@@ -30,11 +30,11 @@ class RpnStack {
 
   int get length => stack.length;
 
-  StackItem get first => stack[0];
+  StackItem get first => this[0];
 
   bool get isEmpty => length == 1 && first.isEmpty;
 
-  StackItem? operator [](int i) => stack[i];
+  StackItem operator [](int i) => stack[i];
 
   void _realizeStack() {
     final first = this.first;
@@ -52,11 +52,11 @@ class RpnStack {
     stack.insert(0, v);
   }
 
-  StackItem? _pop() {
+  StackItem _pop() {
     if (stack.isNotEmpty) {
       return stack.removeAt(0);
     }
-    return null;
+    return EditableItem.blank();
   }
 
   void drop() {
@@ -88,7 +88,7 @@ class RpnStack {
       return;
     }
     _realizeStack();
-    final first = _pop()!;
+    final first = _pop();
     stack.add(first);
   }
 
@@ -121,8 +121,8 @@ class RpnStack {
     }
     _realizeStack();
     final fn = operations[o]!;
-    final b = _pop()!.value;
-    final a = _pop()!.value;
+    final b = _pop().value;
+    final a = _pop().value;
     final res = fn(a, b);
     push(RealizedItem(res));
     return true;
@@ -130,10 +130,8 @@ class RpnStack {
 
   void reverseSign() {
     final v = first.value;
-    final res = v * DynamicInt.negativeOne;
-    if (res is DynamicNumber) {
-      stack[0] = RealizedItem(res);
-    }
+    final res = v * DynamicInt.negativeOne as DynamicNumber;
+    stack[0] = RealizedItem(res);
   }
 
   void percent() {
@@ -142,10 +140,10 @@ class RpnStack {
       case 0:
         return;
       case 1:
-        res = _pop()!.value / DynamicInt.fromInt(100);
+        res = _pop().value / DynamicInt.fromInt(100);
         break;
       default:
-        res = (_pop()!.value / DynamicInt.fromInt(100)) * _pop()!.value;
+        res = (_pop().value / DynamicInt.fromInt(100)) * _pop().value;
         break;
     }
     push(RealizedItem(res));
@@ -156,26 +154,30 @@ class RpnStack {
     stack[0] = EditableItem.blank();
   }
 
-  void appendCurrent(String c) {
+  bool append(String c) {
     final first = this.first;
     EditableItem updated;
-    // Append new editable item.
     if (first is EditableItem) {
       // Update existing item.
-      first.appendChar(c);
+      // TODO(alexei): Provide visual feedback for errors.
+      return first.appendChar(c);
     } else if (appendNew) {
+      // Append new editable item.
       _realizeStack();
       appendNew = false;
       updated = EditableItem.blank()..appendChar(c);
       push(updated);
+      return true;
     } else if (first is RealizedItem) {
       // Replace realized item with new editable item.
       updated = EditableItem.blank()..appendChar(c);
       stack[0] = updated;
+      return true;
     }
+    return false;
   }
 
-  void backspaceCurrent() {
+  void backspace() {
     final first = this.first;
     if (first is RealizedItem) {
       stack[0] = EditableItem(first)..removeChar();

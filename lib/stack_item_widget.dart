@@ -16,8 +16,8 @@ class StackItemWidget extends StatefulWidget {
 
   final void Function(DynamicNumber newVal) onPaste;
   final void Function() onRemove;
-  final StackItem? item;
-  final Color? color;
+  final StackItem item;
+  final Color color;
 
   @override
   StackItemWidgetState createState() => StackItemWidgetState();
@@ -41,10 +41,10 @@ class StackItemWidgetState extends State<StackItemWidget> {
               position: const RelativeRect.fromLTRB(100, 100, 100, 100),
               items: [
                 PopupMenuItem<String>(
-                  enabled: !widget.item!.isEmpty,
+                  enabled: !widget.item.isEmpty,
                   value: 'copy',
                   child: Text(
-                    'Copy ${widget.item!.toRawString()}',
+                    'Copy ${widget.item.toRawString()}',
                     maxLines: 1,
                     softWrap: false,
                     overflow: TextOverflow.fade,
@@ -65,10 +65,11 @@ class StackItemWidgetState extends State<StackItemWidget> {
               });
               switch (value) {
                 case 'copy':
-                  Clipboard.setData(ClipboardData(text: widget.item!.toRawString())).then(
+                  Clipboard.setData(ClipboardData(text: widget.item.toRawString())).then(
                     (_) => ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Copied to clipboard'),
+                        behavior: SnackBarBehavior.floating,
                         duration: Duration(seconds: 2),
                       ),
                     ),
@@ -82,10 +83,12 @@ class StackItemWidgetState extends State<StackItemWidget> {
                       widget.onPaste(newVal);
                       return 1;
                     }
+                    // TODO(alexei): Refactor this to shared error handling.
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Clipboard is not a valid number'),
                         backgroundColor: Theme.of(context).colorScheme.error,
+                        behavior: SnackBarBehavior.floating,
                         duration: const Duration(seconds: 3),
                       ),
                     );

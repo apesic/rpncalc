@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:characters/characters.dart';
+import 'package:intl/intl.dart';
 import 'package:statistics/statistics.dart';
 
 abstract class StackItem {
@@ -15,7 +15,7 @@ abstract class StackItem {
 }
 
 class EditableItem implements StackItem {
-  EditableItem(StackItem? v) {
+  EditableItem(StackItem v) {
     _chars = v.toString();
   }
   EditableItem.blank();
@@ -38,21 +38,32 @@ class EditableItem implements StackItem {
   @override
   bool get isEmpty => _chars.isEmpty;
 
-  void appendChar(String c) {
+  // Attempts to append the provided character to the
+  // current value, and returns a boolean indicating
+  // success.
+  bool appendChar(String c) {
     if (!isEdited) {
       _chars = c;
       isEdited = true;
-      return;
+      return true;
     }
     if (c == '.' && _chars.contains('.')) {
-      return;
+      return false;
+    }
+    // Prevent leading zeros.
+    if (c == '0' && _chars.length == 1 && _chars[0] == '0' ) {
+      return false;
     }
     _chars += c;
+    return true;
   }
 
   void removeChar() {
+    if (isEmpty) {
+      return;
+    }
     isEdited = true;
-    _chars = _chars.characters.skipLast(1).toString();
+    _chars = _chars.substring(0,_chars.length-1);
   }
 
   @override
@@ -78,7 +89,20 @@ class RealizedItem implements StackItem {
   @override
   String toRawString() => _value.toStringStandard();
 
-  // XXX improve formatting
   @override
-  String toString() => _value.toString();
+  String toString() => _formatStackItem(_value);
+}
+
+final NumberFormat sciNotationFormatter = NumberFormat('0.##########E0');
+final Decimal maxDisplaySize = Decimal.fromNum(1e10);
+final Decimal minDisplaySize = Decimal.fromNum(1e-8);
+
+/// Returns a human-friendly format of the value. Values
+/// are formatted in scientific notation if they are
+/// extremely large or small.
+String _formatStackItem(DynamicNumber v) {
+  if (!v.isZero && (v <= minDisplaySize || v >= maxDisplaySize)) {
+    return sciNotationFormatter.format(v.toNum());
+  }
+  return v.toStringStandard();
 }
