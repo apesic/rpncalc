@@ -1,12 +1,15 @@
 import 'dart:developer';
 
 import 'package:characters/characters.dart';
+import 'package:decimal/decimal.dart';
 import 'package:rational/rational.dart';
 
 abstract class StackItem {
   final Rational value = Rational.zero;
   final bool isEmpty = false;
-  static const int maxLength = 18;
+  static const int maxPrecision = 8;
+  static const int minPrecision = 3;
+  static const int maxDisplayLength = 10;
 
   // The unformatted characters that represent the value.
   String toRawString();
@@ -22,15 +25,12 @@ class EditableItem implements StackItem {
   bool isEdited = false;
 
   Rational _parseNum(String s) {
-    try {
-      if (s == '') {
-        return Rational.zero;
-      }
-      return Rational.parse(s);
-    } on FormatException catch (e) {
-      log('Error parsing number $s: $e');
+    final r = Rational.tryParse(s);
+    if (r == null) {
+      log('Error parsing number $s');
       return Rational.zero;
     }
+    return r;
   }
 
   @override
@@ -80,14 +80,25 @@ class RealizedItem implements StackItem {
   Rational get value => _value;
 
   @override
-  String toRawString() => _value.toDecimalString();
+  String toRawString() => _value.toDecimal(scaleOnInfinitePrecision: StackItem.maxPrecision).toString();
 
   @override
   String toString() {
-    final s = _value.toDecimalString();
-    if (s.length <= StackItem.maxLength) {
+    String s;
+    if (!_value.hasFinitePrecision) {
+      s = toRawString();
+      if (s.length <= StackItem.maxDisplayLength) {
+        return s;
+      }
+      return '${s.substring(0, StackItem.maxDisplayLength)}…';
+    }
+    final d = _value.toDecimal();
+    s = d.toString();
+    if (s.length <= StackItem.maxDisplayLength) {
       return s;
     }
-    return _value.toStringAsExponential(StackItem.maxLength - 10);
+    // XXX keep this?
+    // - remove trailing zeros
+    return d.toStringAsExponential(StackItem.minPrecision);
   }
 }

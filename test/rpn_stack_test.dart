@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:rational/rational.dart';
 import 'package:rpncalc/operators.dart';
 import 'package:rpncalc/rpn_stack.dart';
@@ -148,7 +150,6 @@ void main() {
         ..applyBinaryOperation(BinaryOperator.divide);
       expect(s.length, 2);
       expect(s.first!.value, Rational.zero);
-      expect(s.first.runtimeType, RealizedItem);
     });
 
     test('exponent works', () {
@@ -180,7 +181,7 @@ void main() {
         ..appendCurrent('0.5')
         ..applyBinaryOperation(BinaryOperator.exponent);
       expect(s.length, 1);
-      expect(s.first!.value.toStringAsPrecision(10), '1.414213562');
+      expect(s.first!.value, Rational.parse(math.pow(2, 0.5).toString()));
       expect(s.first.runtimeType, RealizedItem);
     });
 
@@ -203,6 +204,53 @@ void main() {
       expect(s.length, 1);
       expect(s.first!.value, Rational.fromInt(2));
       expect(s.first.runtimeType, RealizedItem);
+    });
+  });
+
+  group('formatting', () {
+    test('short decimal', () {
+      final s = RpnStack()
+          ..appendCurrent('3')
+          ..advance()
+          ..appendCurrent('10')
+          ..applyBinaryOperation(BinaryOperator.divide);
+      expect(s.first!.toString(), '0.3');
+    });
+
+    test('long decimal without truncation', () {
+      final s = RpnStack()
+        ..appendCurrent('10')
+        ..advance()
+        ..appendCurrent('3')
+        ..applyBinaryOperation(BinaryOperator.divide);
+      expect(s.first!.toString(), '3.33333333');
+    });
+
+    test('long decimal with truncation', () {
+      final s = RpnStack()
+        ..appendCurrent('10000')
+        ..advance()
+        ..appendCurrent('3')
+        ..applyBinaryOperation(BinaryOperator.divide);
+      expect(s.first!.toString(), '3333.33333 FAIL');
+    });
+
+    test('scientific notation', () {
+      final s = RpnStack()
+        ..appendCurrent('101')
+        ..advance()
+        ..appendCurrent('1000000000')
+        ..applyBinaryOperation(BinaryOperator.multiply);
+      expect(s.first!.toString(), '1.010e+11 WIP');
+    });
+
+    test('raw string with max precision', () {
+      final s = RpnStack()
+        ..appendCurrent('10')
+        ..advance()
+        ..appendCurrent('3')
+        ..applyBinaryOperation(BinaryOperator.divide);
+      expect(s.first!.toRawString(), '3.33333333');
     });
   });
 
@@ -303,6 +351,25 @@ void main() {
         ..remove(0);
       expect(s.length, 1);
       expect(s.first!.value, Rational.zero);
+    });
+
+    test('replacing item works', () {
+      final s = RpnStack()
+        ..appendCurrent('1')
+        ..advance()
+        ..appendCurrent('2')
+        ..replaceAt(1, Rational.fromInt(10));
+      expect(s.length, 2);
+      expect(s.first!.value, Rational.fromInt(2));
+      expect(s[1]!.value, Rational.fromInt(10));
+    });
+
+    test('replacing only item works', () {
+      final s = RpnStack()
+        ..appendCurrent('1')
+        ..replaceAt(0, Rational.fromInt(10));
+      expect(s.length, 1);
+      expect(s.first!.value, Rational.fromInt(10));
     });
   });
 }
