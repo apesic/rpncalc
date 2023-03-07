@@ -270,5 +270,39 @@ void main() {
       expect(s[2]!.value, Rational.fromInt(2));
       expect(s.first.runtimeType, RealizedItem);
     });
+
+    test('removing intermediate item works', () {
+      final s = RpnStack()
+        ..appendCurrent('1')
+        ..advance()
+        ..appendCurrent('2')
+        ..advance()
+        ..appendCurrent('3')
+        ..remove(1);
+      expect(s.length, 2);
+      expect(s.first!.value, Rational.fromInt(3));
+      expect(s[1]!.value, Rational.one);
+    });
+
+    test('removing top item works', () {
+      final s = RpnStack()
+        ..appendCurrent('1')
+        ..advance()
+        ..appendCurrent('2')
+        ..advance()
+        ..appendCurrent('3')
+        ..remove(2);
+      expect(s.length, 2);
+      expect(s.first!.value, Rational.fromInt(3));
+      expect(s[1]!.value, Rational.fromInt(2));
+    });
+
+    test('removing only item works', () {
+      final s = RpnStack()
+        ..appendCurrent('1')
+        ..remove(0);
+      expect(s.length, 1);
+      expect(s.first!.value, Rational.zero);
+    });
   });
 }

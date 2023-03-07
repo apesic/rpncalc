@@ -192,6 +192,10 @@ class RpnStack {
   }
 
   void remove(int index) {
+    // Ensure that we don't leave an empty stack after removal.
+    if (stack.length == 1) {
+      return clearAll();
+    }
     stack.removeAt(index);
   }
 
