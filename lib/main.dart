@@ -54,10 +54,10 @@ class AppHome extends StatefulWidget {
   const AppHome({Key? key}) : super(key: key);
 
   @override
-  _AppHomeState createState() => _AppHomeState();
+  AppHomeState createState() => AppHomeState();
 }
 
-class _AppHomeState extends State<AppHome> {
+class AppHomeState extends State<AppHome> {
   RpnStack _stack = RpnStack();
   // TODO(alexei): improve undo implementation.
   final List<RpnStack> _undoBuffer = [];

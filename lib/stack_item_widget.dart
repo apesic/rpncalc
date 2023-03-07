@@ -20,10 +20,10 @@ class StackItemWidget extends StatefulWidget {
   final Color? color;
 
   @override
-  _StackItemWidgetState createState() => _StackItemWidgetState();
+  StackItemWidgetState createState() => StackItemWidgetState();
 }
 
-class _StackItemWidgetState extends State<StackItemWidget> {
+class StackItemWidgetState extends State<StackItemWidget> {
   var _highlighted = false;
 
   @override
@@ -128,10 +128,10 @@ class Carat extends StatefulWidget {
   const Carat({Key? key}) : super(key: key);
 
   @override
-  _CaratState createState() => _CaratState();
+  CaratState createState() => CaratState();
 }
 
-class _CaratState extends State<Carat> with SingleTickerProviderStateMixin {
+class CaratState extends State<Carat> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final duration = const Duration(milliseconds: 500);
 
