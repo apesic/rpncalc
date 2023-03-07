@@ -3,7 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:rational/rational.dart';
+import 'package:statistics/statistics.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'binary_operator_widget.dart';
@@ -130,7 +130,7 @@ class AppHomeState extends State<AppHome> {
     });
   }
 
-  void _onPaste(int index, Rational newVal) {
+  void _onPaste(int index, DynamicNumber newVal) {
     _setStateWithUndo(() {
       _stack.replaceAt(index, newVal);
     });
@@ -406,12 +406,12 @@ class AppHomeState extends State<AppHome> {
                                     style: TextButton.styleFrom(
                                       backgroundColor: Colors.blueGrey[800],
                                     ),
-                                    onPressed: (_stack.isEmpty || _stack.first!.isEmpty)
+                                    onPressed: (_stack.isEmpty || _stack.first.isEmpty)
                                         ? _handleClearAll
                                         : _handleClear,
                                     onLongPress: _handleClearAll,
                                     child:
-                                        Text(_stack.isEmpty || _stack.first!.isEmpty ? 'AC' : 'C'),
+                                        Text(_stack.isEmpty || _stack.first.isEmpty ? 'AC' : 'C'),
                                   ),
                                 ),
                                 Expanded(

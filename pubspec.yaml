@@ -27,6 +27,7 @@ dependencies:
   google_fonts: ^4.0.3
   package_info_plus: ^3.0.3
   rational: ^2.2.2
+  statistics: ^1.0.24
   url_launcher: ^6.1.10
 
 dev_dependencies:

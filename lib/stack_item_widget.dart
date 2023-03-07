@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rational/rational.dart';
+import 'package:statistics/statistics.dart';
 
 import 'stack_item.dart';
 
@@ -14,7 +14,7 @@ class StackItemWidget extends StatefulWidget {
     Key? key,
   }) : super(key: key);
 
-  final void Function(Rational newVal) onPaste;
+  final void Function(DynamicNumber newVal) onPaste;
   final void Function() onRemove;
   final StackItem? item;
   final Color? color;
@@ -76,21 +76,20 @@ class StackItemWidgetState extends State<StackItemWidget> {
                   break;
                 case 'paste':
                   Clipboard.getData('text/plain').then((value) {
-                    Rational newVal;
                     final s = value!.text!;
-                    try {
-                      newVal = Rational.parse(s);
-                    } on FormatException catch (_) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Clipboard is not a valid number'),
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                      return 0;
+                    final newVal = DynamicNumber.tryParse(s);
+                    if (newVal is DynamicNumber) {
+                      widget.onPaste(newVal);
+                      return 1;
                     }
-                    widget.onPaste(newVal);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Clipboard is not a valid number'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                    return 0;
                   });
                   break;
                 case 'remove':

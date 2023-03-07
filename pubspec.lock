@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.10.0"
+  base_codecs:
+    dependency: transitive
+    description:
+      name: base_codecs
+      sha256: "41701a12ede9912663decd708279924ece5018566daa7d1f484d5f4f10894f91"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -113,6 +121,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  data_serializer:
+    dependency: transitive
+    description:
+      name: data_serializer
+      sha256: "4f5fe72aab892bb4853dedfb974fc606a2791e37c4913236a57bc10defb9137b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.7"
   decimal:
     dependency: "direct main"
     description:
@@ -232,6 +248,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.15"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: a3715e3bc90294e971cb7dc063fbf3cd9ee0ebf8604ffeafabd9e6f16abbdbe6
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.18.0"
   io:
     dependency: transitive
     description:
@@ -525,6 +549,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.0"
+  statistics:
+    dependency: "direct main"
+    description:
+      name: statistics
+      sha256: "4cebf51214bfbc44f95beb6026481d3ce7e2441213655009b25a26ed9e658da2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.24"
   stream_channel:
     dependency: transitive
     description:

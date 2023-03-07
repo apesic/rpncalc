@@ -1,4 +1,4 @@
-import 'package:rational/rational.dart';
+import 'package:statistics/statistics.dart';
 
 import 'operators.dart';
 import 'stack_item.dart';
@@ -10,27 +10,29 @@ class RpnStack {
 
   RpnStack.clone(RpnStack source) {
     for (final o in source.stack) {
-      StackItem? clone;
+      StackItem clone;
       if (o is EditableItem) {
         clone = EditableItem(o);
       } else if (o is RealizedItem) {
         clone = RealizedItem(o.value);
+      } else {
+        throw StateError('unknown item type for $o');
       }
       stack.add(clone);
     }
     appendNew = source.appendNew;
   }
 
-  final List<StackItem?> stack = [];
+  final List<StackItem> stack = [];
 
   // When true, the next append operation should create a new item.
   bool appendNew = false;
 
   int get length => stack.length;
 
-  StackItem? get first => stack[0];
+  StackItem get first => stack[0];
 
-  bool get isEmpty => length == 1 && first!.isEmpty;
+  bool get isEmpty => length == 1 && first.isEmpty;
 
   StackItem? operator [](int i) => stack[i];
 
@@ -46,7 +48,7 @@ class RpnStack {
     assert(stack.every((e) => e is RealizedItem), 'Every element in stack should be realized.');
   }
 
-  void push(StackItem? v) {
+  void push(StackItem v) {
     stack.insert(0, v);
   }
 
@@ -86,7 +88,7 @@ class RpnStack {
       return;
     }
     _realizeStack();
-    final first = _pop();
+    final first = _pop()!;
     stack.add(first);
   }
 
@@ -107,13 +109,13 @@ class RpnStack {
     if (stack.length < 2) {
       return false;
     }
-    if (o == BinaryOperator.divide && stack.first?.value == Rational.zero) {
+    if (o == BinaryOperator.divide && stack.first.value.isZero) {
       // Divide by zero error;
       return false;
     }
     appendNew = true;
     // If the first item is editable and empty, remove and skip the operation.
-    if (first!.isEmpty) {
+    if (first.isEmpty) {
       _pop();
       return false;
     }
@@ -126,28 +128,24 @@ class RpnStack {
     return true;
   }
 
-  void inverse() {
-    final v = first!.value;
-    if (v != Rational.zero) {
-      stack[0] = RealizedItem(Rational.one / v);
+  void reverseSign() {
+    final v = first.value;
+    final res = v * DynamicInt.negativeOne;
+    if (res is DynamicNumber) {
+      stack[0] = RealizedItem(res);
     }
   }
 
-  void reverseSign() {
-    final v = first!.value;
-    stack[0] = RealizedItem(v * Rational.fromInt(-1));
-  }
-
   void percent() {
-    Rational res;
+    DynamicNumber res;
     switch (stack.length) {
       case 0:
         return;
       case 1:
-        res = _pop()!.value / Rational.fromInt(100);
+        res = _pop()!.value / DynamicInt.fromInt(100);
         break;
       default:
-        res = (_pop()!.value / Rational.fromInt(100)) * _pop()!.value;
+        res = (_pop()!.value / DynamicInt.fromInt(100)) * _pop()!.value;
         break;
     }
     push(RealizedItem(res));
@@ -199,7 +197,7 @@ class RpnStack {
     stack.removeAt(index);
   }
 
-  void replaceAt(int index, Rational newVal) {
+  void replaceAt(int index, DynamicNumber newVal) {
     stack[index] = RealizedItem(newVal);
   }
 }
