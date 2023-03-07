@@ -1,12 +1,10 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rational/rational.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'binary_operator_widget.dart';
 import 'num_button_widget.dart';
@@ -193,7 +191,11 @@ class _AppHomeState extends State<AppHome> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.more_vert),
-                      onPressed: () => _showAboutPage(context),
+                      onPressed: () {
+                        PackageInfo.fromPlatform().then((packageInfo) =>
+                            _showAboutPage(context, packageInfo)
+                        );
+                      },
                     )
                   ],
                 ),
@@ -470,9 +472,11 @@ class _AppHomeState extends State<AppHome> {
       );
 }
 
-Future<void> _showAboutPage(BuildContext context) async {
-  final packageInfo = await PackageInfo.fromPlatform();
-  return showAboutDialog(
+
+const wikipediaUrl = 'https://en.wikipedia.org/wiki/Reverse_Polish_notation';
+const repoUrl = 'https://github.com/apesic/rpncalc';
+
+void _showAboutPage(BuildContext context, PackageInfo packageInfo) => showAboutDialog(
     context: context,
     applicationIcon: const Image(
       image: AssetImage('assets/icon/icon.png'),
@@ -495,9 +499,9 @@ Future<void> _showAboutPage(BuildContext context) async {
                 style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () async {
-                    const url = 'https://en.wikipedia.org/wiki/Reverse_Polish_notation';
-                    if (await canLaunchUrlString(url)) {
-                      await launchUrlString(url);
+                    final url = Uri.parse(wikipediaUrl);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
                     }
                   },
               ),
@@ -506,13 +510,13 @@ Future<void> _showAboutPage(BuildContext context) async {
                     '.\n\nTo leave feedback, submit a bug report, or view the source-code, see:\n',
               ),
               TextSpan(
-                text: 'https://github.com/apesic/rpncalc',
+                text: repoUrl,
                 style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () async {
-                    const url = 'https://github.com/apesic/rpncalc';
-                    if (await canLaunchUrlString(url)) {
-                      await launchUrlString(url);
+                    final url = Uri.parse(repoUrl);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
                     }
                   },
               ),
@@ -525,4 +529,3 @@ Future<void> _showAboutPage(BuildContext context) async {
       )
     ],
   );
-}
