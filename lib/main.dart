@@ -125,7 +125,10 @@ class _AppHomeState extends State<AppHome> {
   void _applyBinaryOperation(BinaryOperator op) {
     _setStateWithUndo(() {
       HapticFeedback.lightImpact();
-      _stack.applyBinaryOperation(op);
+      final ok = _stack.applyBinaryOperation(op);
+      if (!ok) {
+        // TODO(alexei): provide visual feedback if !ok (pulse stack background?)
+      }
     });
   }
 

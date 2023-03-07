@@ -140,6 +140,17 @@ void main() {
       expect(s.first.runtimeType, RealizedItem);
     });
 
+    test('divide by zero works', () {
+      final s = RpnStack()
+        ..appendCurrent('2')
+        ..advance()
+        ..appendCurrent('0')
+        ..applyBinaryOperation(BinaryOperator.divide);
+      expect(s.length, 2);
+      expect(s.first!.value, Rational.zero);
+      expect(s.first.runtimeType, RealizedItem);
+    });
+
     test('exponent works', () {
       final s = RpnStack()
         ..appendCurrent('2')
@@ -148,6 +159,17 @@ void main() {
         ..applyBinaryOperation(BinaryOperator.exponent);
       expect(s.length, 1);
       expect(s.first!.value, Rational.parse('9.18958683997628'));
+      expect(s.first.runtimeType, RealizedItem);
+    });
+
+    test('negative exponent works', () {
+      final s = RpnStack()
+        ..appendCurrent('2')
+        ..advance()
+        ..appendCurrent('-1')
+        ..applyBinaryOperation(BinaryOperator.exponent);
+      expect(s.length, 1);
+      expect(s.first!.value, Rational.parse('0.5'));
       expect(s.first.runtimeType, RealizedItem);
     });
 

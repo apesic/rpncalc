@@ -99,15 +99,23 @@ class RpnStack {
     push(last);
   }
 
-  void applyBinaryOperation(BinaryOperator o) {
+
+  /// Attempts to apply the provided operator to the two top-most items in the
+  /// stack. Returns a boolean indicating if the operation was applied
+  /// successfully.
+  bool applyBinaryOperation(BinaryOperator o) {
     if (stack.length < 2) {
-      return;
+      return false;
+    }
+    if (o == BinaryOperator.divide && stack.first?.value == Rational.zero) {
+      // Divide by zero error;
+      return false;
     }
     appendNew = true;
     // If the first item is editable and empty, remove and skip the operation.
     if (first!.isEmpty) {
       _pop();
-      return;
+      return false;
     }
     _realizeStack();
     final fn = operations[o]!;
@@ -115,6 +123,7 @@ class RpnStack {
     final a = _pop()!.value;
     final res = fn(a, b);
     push(RealizedItem(res));
+    return true;
   }
 
   void inverse() {
