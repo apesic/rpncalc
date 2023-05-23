@@ -25,6 +25,7 @@ void main() {
         ..append('1');
       expect(s.length, 1);
       expect(s.first.value, DynamicNumber.fromNum(2.1));
+
     });
 
     test('characters can be removed', () {
@@ -177,6 +178,20 @@ void main() {
       expect(s.first.value, DynamicNumber.fromDouble(9.18958683997628));
       expect(s.first.runtimeType, RealizedItem);
     });
+
+    test('large exponent works', () {
+      final s = RpnStack()
+          ..append('5555222.2')
+          ..advance()
+          ..append('224')
+          ..applyBinaryOperation(BinaryOperator.exponent);
+      expect(s.length, 1);
+      // 6.503114111893492767503637533496075541259313552834812078610... × 10^1510
+      final want = Decimal.parse('6.503114111893492767503637533496075541259313552834812078610')*Decimal.ten.power(DynamicNumber.fromNum(1510));
+      closeTo(s.first.value.toNum(), want.toNum());
+      expect(s.first.runtimeType, RealizedItem);
+    });
+
 
     test('negative exponent works', () {
       final s = RpnStack()

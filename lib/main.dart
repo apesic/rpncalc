@@ -237,9 +237,9 @@ class AppHomeState extends State<AppHome> {
                               HapticFeedback.selectionClick();
                               _setStateWithUndo(_stack.rotateUp);
                             },
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
+                              children: [
                                 Text('R'),
                                 Icon(
                                   Icons.arrow_upward_sharp,
@@ -258,9 +258,9 @@ class AppHomeState extends State<AppHome> {
                               HapticFeedback.selectionClick();
                               _setStateWithUndo(_stack.rotateDown);
                             },
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
+                              children: [
                                 Text('R'),
                                 Icon(
                                   Icons.arrow_downward_sharp,
