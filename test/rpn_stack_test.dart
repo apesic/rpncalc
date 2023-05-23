@@ -254,6 +254,16 @@ void main() {
       expect(s.first.toString(), '3.3333333333333333');
     });
 
+    test('negative result', () {
+      final s = RpnStack()
+        ..append('10')
+        ..advance()
+        ..append('3')
+        ..applyBinaryOperation(BinaryOperator.divide)
+        ..reverseSign();
+      expect(s.first.toString(), '-3.3333333333333333');
+    });
+
     test('scientific notation', () {
       final s = RpnStack()
         ..append('101')
@@ -261,6 +271,16 @@ void main() {
         ..append('1000000000')
         ..applyBinaryOperation(BinaryOperator.multiply);
       expect(s.first.toString(), '1.01E11');
+    });
+
+    test('negative scientific notation', () {
+      final s = RpnStack()
+        ..append('101')
+        ..advance()
+        ..append('1000000000')
+        ..reverseSign()
+        ..applyBinaryOperation(BinaryOperator.multiply);
+      expect(s.first.toString(), '-1.01E11');
     });
 
     test('raw string with max precision', () {

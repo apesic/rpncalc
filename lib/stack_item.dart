@@ -101,7 +101,8 @@ final Decimal minDisplaySize = Decimal.fromNum(1e-8);
 /// are formatted in scientific notation if they are
 /// extremely large or small.
 String _formatStackItem(DynamicNumber v) {
-  if (!v.isZero && (v <= minDisplaySize || v >= maxDisplaySize)) {
+  final abs = v.abs();
+  if (!v.isZero && (abs <= minDisplaySize || abs >= maxDisplaySize)) {
     return sciNotationFormatter.format(v.toNum());
   }
   return v.toStringStandard();
