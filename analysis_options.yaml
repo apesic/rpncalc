@@ -1,4 +1,4 @@
-include: package:pedantic/analysis_options.yaml
+include: package:flutter_lints/flutter.yaml
 
 analyzer:
   exclude: [ build/** ]
@@ -6,21 +6,19 @@ analyzer:
     missing_required_param: error
     missing_return: error
     todo: warning
-  strong-mode:
-    implicit-casts: false
-    implicit-dynamic: false
+  language:
+    strict-casts: true
+    strict-raw-types: true
 
 linter:
   rules:
     - always_declare_return_types
     - always_put_control_body_on_new_line
     - always_put_required_named_parameters_first
-    - always_require_non_null_named_parameters
 #    - always_specify_types
 #    - always_use_package_imports
     - annotate_overrides
     - avoid_annotating_with_dynamic
-    - avoid_as
     - avoid_bool_literals_in_conditional_expressions
     - avoid_catches_without_on_clauses
     - avoid_catching_errors
@@ -42,8 +40,6 @@ linter:
 #    - avoid_relative_lib_imports
     - avoid_renaming_method_parameters
     - avoid_return_types_on_setters
-    - avoid_returning_null
-    - avoid_returning_null_for_future
     - avoid_returning_null_for_void
     - avoid_returning_this
     - avoid_setters_without_getters
@@ -78,7 +74,6 @@ linter:
     - flutter_style_todos
     - hash_and_equals
     - implementation_imports
-    - invariant_booleans
     - iterable_contains_unrelated_type
     - join_return_with_assignment
     - leading_newlines_in_multiline_strings

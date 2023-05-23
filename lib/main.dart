@@ -1,11 +1,9 @@
-import 'dart:ui';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:statistics/statistics.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'binary_operator_widget.dart';
@@ -26,14 +24,20 @@ void main() {
 }
 
 class RpnCalc extends StatelessWidget {
-  const RpnCalc({Key key}) : super(key: key);
+  const RpnCalc({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) => MaterialApp(
       title: appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          textTheme: const TextTheme(button: TextStyle(fontSize: 24)),
-          primarySwatch: Colors.orange,
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              shape: const ContinuousRectangleBorder(),
+              foregroundColor: Colors.white,
+              textStyle: const TextStyle(fontSize: 24),
+            ),
+          ),
+          primarySwatch: Colors.purple,
           brightness: Brightness.dark,
           snackBarTheme: SnackBarThemeData(
             backgroundColor: Colors.grey[800],
@@ -47,13 +51,13 @@ class RpnCalc extends StatelessWidget {
 }
 
 class AppHome extends StatefulWidget {
-  const AppHome({Key key}) : super(key: key);
+  const AppHome({Key? key}) : super(key: key);
 
   @override
-  _AppHomeState createState() => _AppHomeState();
+  AppHomeState createState() => AppHomeState();
 }
 
-class _AppHomeState extends State<AppHome> {
+class AppHomeState extends State<AppHome> {
   RpnStack _stack = RpnStack();
   // TODO(alexei): improve undo implementation.
   final List<RpnStack> _undoBuffer = [];
@@ -83,8 +87,10 @@ class _AppHomeState extends State<AppHome> {
 
   void _handleAppend(String c) {
     setState(() {
-      HapticFeedback.selectionClick();
-      _stack.appendCurrent(c);
+      final ok = _stack.append(c);
+      if (ok) {
+        HapticFeedback.selectionClick();
+      }
     });
   }
 
@@ -118,12 +124,15 @@ class _AppHomeState extends State<AppHome> {
 
   void _applyBinaryOperation(BinaryOperator op) {
     _setStateWithUndo(() {
-      HapticFeedback.lightImpact();
-      _stack.applyBinaryOperation(op);
+      final ok = _stack.applyBinaryOperation(op);
+      if (ok) {
+        HapticFeedback.lightImpact();
+      }
+      // TODO(alexei): provide visual feedback if !ok (pulse stack background?)
     });
   }
 
-  void _onPaste(int index, num newVal) {
+  void _onPaste(int index, DynamicNumber newVal) {
     _setStateWithUndo(() {
       _stack.replaceAt(index, newVal);
     });
@@ -164,7 +173,8 @@ class _AppHomeState extends State<AppHome> {
                                   if (index == 0) {
                                     if (!_stack.appendNew && item is RealizedItem ||
                                         (item is EditableItem && !item.isEdited)) {
-                                      color = Colors.grey[800];
+                                      // XXX
+                                      color = Colors.grey[800]!;
                                     } else if (!_stack.appendNew) {
                                       color = Colors.orangeAccent;
                                     }
@@ -184,7 +194,11 @@ class _AppHomeState extends State<AppHome> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.more_vert),
-                      onPressed: () => _showAboutPage(context),
+                      onPressed: () {
+                        PackageInfo.fromPlatform().then((packageInfo) =>
+                            _showAboutPage(context, packageInfo)
+                        );
+                      },
                     )
                   ],
                 ),
@@ -198,63 +212,78 @@ class _AppHomeState extends State<AppHome> {
                     Flexible(
                       child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         Expanded(
-                          child: ButtonTheme(
-                            shape: const ContinuousRectangleBorder(),
-                            child: FlatButton(
-                              color: Colors.grey[700],
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.swap);
-                              },
-                              child: const Text(
-                                '⇅',
-                                style: TextStyle(fontSize: 22),
-                              ),
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.grey[700],
+                            ),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _setStateWithUndo(_stack.swap);
+                            },
+                            child: const Icon(
+                              Icons.swap_vert_sharp,
+                              size: 22,
+                              semanticLabel: 'Swap',
                             ),
                           ),
                         ),
                         Expanded(
-                          child: ButtonTheme(
-                            shape: const ContinuousRectangleBorder(),
-                            child: FlatButton(
-                              color: Colors.grey[700],
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.rotateUp);
-                              },
-                              child: const Text(
-                                'R↑',
-                                style: TextStyle(fontSize: 18),
-                              ),
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.grey[700],
+                              textStyle: const TextStyle(fontSize: 18),
+                            ),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _setStateWithUndo(_stack.rotateUp);
+                            },
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('R'),
+                                Icon(
+                                  Icons.arrow_upward_sharp,
+                                  size: 16,
+                                )
+                              ],
                             ),
                           ),
                         ),
                         Expanded(
-                          child: ButtonTheme(
-                            shape: const ContinuousRectangleBorder(),
-                            child: FlatButton(
-                              color: Colors.grey[700],
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _setStateWithUndo(_stack.rotateDown);
-                              },
-                              child: const Text(
-                                'R↓',
-                                style: TextStyle(fontSize: 18),
-                              ),
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                                backgroundColor: Colors.grey[700],
+                                textStyle: const TextStyle(fontSize: 18)),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _setStateWithUndo(_stack.rotateDown);
+                            },
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('R'),
+                                Icon(
+                                  Icons.arrow_downward_sharp,
+                                  size: 16,
+                                )
+                              ],
                             ),
                           ),
                         ),
                         Expanded(
-                          child: ButtonTheme(
-                            // height: 30,
-                            shape: const ContinuousRectangleBorder(),
-                            child: FlatButton(
-                              color: Colors.blueGrey[600],
-                              onPressed: _undoBuffer.isEmpty ? null : _undo,
-                              disabledColor: Colors.blueGrey[700],
-                              child: const Icon(Icons.undo),
+                          child: TextButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                (states) {
+                                  if (states.contains(MaterialState.disabled)) {
+                                    return Colors.blueGrey[700]!;
+                                  }
+                                  return Colors.grey[600]!;
+                                },
+                              ),
                             ),
+                            onPressed: _undoBuffer.isEmpty ? null : _undo,
+                            child: const Icon(Icons.undo),
                           ),
                         ),
                       ]),
@@ -274,13 +303,14 @@ class _AppHomeState extends State<AppHome> {
                                   Expanded(
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        border: Border(bottom: BorderSide(color: Colors.grey[700])),
+                                        border:
+                                            Border(bottom: BorderSide(color: Colors.grey[700]!)),
                                       ),
                                       child: Row(
                                           crossAxisAlignment: CrossAxisAlignment.stretch,
                                           children: [
                                             Expanded(
-                                              child: FlatButton(
+                                              child: TextButton(
                                                 onPressed: () {
                                                   HapticFeedback.selectionClick();
                                                   _setStateWithUndo(_stack.reverseSign);
@@ -292,7 +322,7 @@ class _AppHomeState extends State<AppHome> {
                                               ),
                                             ),
                                             Expanded(
-                                              child: FlatButton(
+                                              child: TextButton(
                                                 onPressed: () {
                                                   _applyBinaryOperation(BinaryOperator.exponent);
                                                 },
@@ -303,7 +333,7 @@ class _AppHomeState extends State<AppHome> {
                                               ),
                                             ),
                                             Expanded(
-                                              child: FlatButton(
+                                              child: TextButton(
                                                 onPressed: () {
                                                   HapticFeedback.selectionClick();
                                                   _setStateWithUndo(_stack.percent);
@@ -328,8 +358,11 @@ class _AppHomeState extends State<AppHome> {
                                         children: [
                                           for (final n in row)
                                             Expanded(
-                                                child: NumButtonWidget(
-                                                    char: n.toString(), onPressed: _handleAppend))
+                                              child: NumButtonWidget(
+                                                char: n.toString(),
+                                                onPressed: _handleAppend,
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
@@ -341,13 +374,17 @@ class _AppHomeState extends State<AppHome> {
                                               child: NumButtonWidget(
                                                   char: '0', onPressed: _handleAppend)),
                                           Expanded(
-                                              child: NumButtonWidget(
-                                                  char: '.', onPressed: _handleAppend)),
+                                            child: NumButtonWidget(
+                                              char: '.',
+                                              onPressed: _handleAppend,
+                                              fontSize: 30,
+                                            ),
+                                          ),
                                           Expanded(
-                                            child: FlatButton(
+                                            child: TextButton(
                                               onPressed: () {
                                                 HapticFeedback.selectionClick();
-                                                _setStateWithUndo(_stack.backspaceCurrent);
+                                                _setStateWithUndo(_stack.backspace);
                                               },
                                               onLongPress: _handleDrop,
                                               child: const Icon(
@@ -368,18 +405,16 @@ class _AppHomeState extends State<AppHome> {
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: ButtonTheme(
-                                    // height: 64,
-                                    shape: const ContinuousRectangleBorder(),
-                                    child: FlatButton(
-                                      color: Colors.blueGrey[800],
-                                      onPressed: (_stack.isEmpty || _stack.first.isEmpty)
-                                          ? _handleClearAll
-                                          : _handleClear,
-                                      onLongPress: _handleClearAll,
-                                      child:
-                                          Text(_stack.isEmpty || _stack.first.isEmpty ? 'AC' : 'C'),
+                                  child: TextButton(
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.blueGrey[800],
                                     ),
+                                    onPressed: (_stack.isEmpty || _stack.first.isEmpty)
+                                        ? _handleClearAll
+                                        : _handleClear,
+                                    onLongPress: _handleClearAll,
+                                    child:
+                                        Text(_stack.isEmpty || _stack.first.isEmpty ? 'AC' : 'C'),
                                   ),
                                 ),
                                 Expanded(
@@ -412,16 +447,16 @@ class _AppHomeState extends State<AppHome> {
                                 ),
                                 Expanded(
                                   flex: 4,
-                                  child: ButtonTheme(
-                                    shape: const ContinuousRectangleBorder(),
-                                    child: FlatButton(
-                                      color: Colors.orangeAccent,
-                                      onPressed: _handleAdvance,
-                                      child: const Icon(
-                                        Icons.keyboard_return,
-                                        size: 34,
-                                        semanticLabel: 'Enter',
-                                      ),
+                                  child: TextButton(
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.orangeAccent,
+                                      foregroundColor: Colors.black,
+                                    ),
+                                    onPressed: _handleAdvance,
+                                    child: const Icon(
+                                      Icons.keyboard_return,
+                                      size: 35,
+                                      semanticLabel: 'Enter',
                                     ),
                                   ),
                                 ),
@@ -440,9 +475,11 @@ class _AppHomeState extends State<AppHome> {
       );
 }
 
-Future<void> _showAboutPage(BuildContext context) async {
-  final packageInfo = await PackageInfo.fromPlatform();
-  return showAboutDialog(
+
+const wikipediaUrl = 'https://en.wikipedia.org/wiki/Reverse_Polish_notation';
+const repoUrl = 'https://github.com/apesic/rpncalc';
+
+void _showAboutPage(BuildContext context, PackageInfo packageInfo) => showAboutDialog(
     context: context,
     applicationIcon: const Image(
       image: AssetImage('assets/icon/icon.png'),
@@ -462,12 +499,12 @@ Future<void> _showAboutPage(BuildContext context) async {
               ),
               TextSpan(
                 text: 'Reverse Polish Notation',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () async {
-                    const url = 'https://en.wikipedia.org/wiki/Reverse_Polish_notation';
-                    if (await canLaunch(url)) {
-                      await launch(url);
+                    final url = Uri.parse(wikipediaUrl);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
                     }
                   },
               ),
@@ -476,13 +513,13 @@ Future<void> _showAboutPage(BuildContext context) async {
                     '.\n\nTo leave feedback, submit a bug report, or view the source-code, see:\n',
               ),
               TextSpan(
-                text: 'https://github.com/apesic/rpncalc',
-                style: TextStyle(color: Theme.of(context).accentColor),
+                text: repoUrl,
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () async {
-                    const url = 'https://github.com/apesic/rpncalc';
-                    if (await canLaunch(url)) {
-                      await launch(url);
+                    final url = Uri.parse(repoUrl);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
                     }
                   },
               ),
@@ -495,4 +532,3 @@ Future<void> _showAboutPage(BuildContext context) async {
       )
     ],
   );
-}

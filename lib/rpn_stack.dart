@@ -1,3 +1,5 @@
+import 'package:statistics/statistics.dart';
+
 import 'operators.dart';
 import 'stack_item.dart';
 
@@ -5,6 +7,7 @@ class RpnStack {
   RpnStack() {
     stack.add(EditableItem.blank());
   }
+
   RpnStack.clone(RpnStack source) {
     for (final o in source.stack) {
       StackItem clone;
@@ -12,17 +15,23 @@ class RpnStack {
         clone = EditableItem(o);
       } else if (o is RealizedItem) {
         clone = RealizedItem(o.value);
+      } else {
+        throw StateError('unknown item type for $o');
       }
       stack.add(clone);
     }
     appendNew = source.appendNew;
   }
+
   final List<StackItem> stack = [];
+
   // When true, the next append operation should create a new item.
   bool appendNew = false;
 
   int get length => stack.length;
-  StackItem get first => stack[0];
+
+  StackItem get first => this[0];
+
   bool get isEmpty => length == 1 && first.isEmpty;
 
   StackItem operator [](int i) => stack[i];
@@ -47,7 +56,7 @@ class RpnStack {
     if (stack.isNotEmpty) {
       return stack.removeAt(0);
     }
-    return null;
+    return EditableItem.blank();
   }
 
   void drop() {
@@ -92,46 +101,49 @@ class RpnStack {
     push(last);
   }
 
-  void applyBinaryOperation(BinaryOperator o) {
+
+  /// Attempts to apply the provided operator to the two top-most items in the
+  /// stack. Returns a boolean indicating if the operation was applied
+  /// successfully.
+  bool applyBinaryOperation(BinaryOperator o) {
     if (stack.length < 2) {
-      return;
+      return false;
+    }
+    if (o == BinaryOperator.divide && stack.first.value.isZero) {
+      // Divide by zero error;
+      return false;
     }
     appendNew = true;
     // If the first item is editable and empty, remove and skip the operation.
     if (first.isEmpty) {
       _pop();
-      return;
+      return false;
     }
     _realizeStack();
-    final fn = operations[o];
+    final fn = operations[o]!;
     final b = _pop().value;
     final a = _pop().value;
     final res = fn(a, b);
     push(RealizedItem(res));
-  }
-
-  void inverse() {
-    final v = first.value;
-    if (v != null && v != 0) {
-      stack[0] = RealizedItem(1 / v);
-    }
+    return true;
   }
 
   void reverseSign() {
     final v = first.value;
-    stack[0] = RealizedItem(v * -1);
+    final res = v * DynamicInt.negativeOne as DynamicNumber;
+    stack[0] = RealizedItem(res);
   }
 
   void percent() {
-    num res;
+    DynamicNumber res;
     switch (stack.length) {
       case 0:
         return;
       case 1:
-        res = _pop().value / 100;
+        res = _pop().value / DynamicInt.fromInt(100);
         break;
       default:
-        res = (_pop().value / 100) * _pop().value;
+        res = (_pop().value / DynamicInt.fromInt(100)) * _pop().value;
         break;
     }
     push(RealizedItem(res));
@@ -142,26 +154,30 @@ class RpnStack {
     stack[0] = EditableItem.blank();
   }
 
-  void appendCurrent(String c) {
+  bool append(String c) {
     final first = this.first;
     EditableItem updated;
-    // Append new editable item.
     if (first is EditableItem) {
       // Update existing item.
-      first.appendChar(c);
+      // TODO(alexei): Provide visual feedback for errors.
+      return first.appendChar(c);
     } else if (appendNew) {
+      // Append new editable item.
       _realizeStack();
       appendNew = false;
       updated = EditableItem.blank()..appendChar(c);
       push(updated);
+      return true;
     } else if (first is RealizedItem) {
       // Replace realized item with new editable item.
       updated = EditableItem.blank()..appendChar(c);
       stack[0] = updated;
+      return true;
     }
+    return false;
   }
 
-  void backspaceCurrent() {
+  void backspace() {
     final first = this.first;
     if (first is RealizedItem) {
       stack[0] = EditableItem(first)..removeChar();
@@ -176,10 +192,14 @@ class RpnStack {
   }
 
   void remove(int index) {
+    // Ensure that we don't leave an empty stack after removal.
+    if (stack.length == 1) {
+      return clearAll();
+    }
     stack.removeAt(index);
   }
 
-  void replaceAt(int index, num newVal) {
+  void replaceAt(int index, DynamicNumber newVal) {
     stack[index] = RealizedItem(newVal);
   }
 }

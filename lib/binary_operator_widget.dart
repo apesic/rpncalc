@@ -4,10 +4,10 @@ import 'operators.dart';
 
 class BinaryOperatorWidget extends StatelessWidget {
   const BinaryOperatorWidget({
-    @required this.label,
-    @required this.onPressed,
-    @required this.op,
-    Key key,
+    required this.label,
+    required this.onPressed,
+    required this.op,
+    Key? key,
   }) : super(key: key);
 
   final String label;
@@ -15,15 +15,20 @@ class BinaryOperatorWidget extends StatelessWidget {
   final Function(BinaryOperator op) onPressed;
 
   @override
-  Widget build(BuildContext context) => FlatButton(
-        shape: const ContinuousRectangleBorder(),
-        color: Colors.grey[800],
+  Widget build(BuildContext context) => TextButton(
+        style: TextButton.styleFrom(
+          shape: const ContinuousRectangleBorder(),
+          backgroundColor: Colors.grey[800],
+        ),
         onPressed: () {
           onPressed(op);
         },
         child: Text(
           label,
-          style: const TextStyle(color: Colors.lightBlueAccent),
+          style: const TextStyle(
+            color: Colors.lightBlueAccent,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       );
 }

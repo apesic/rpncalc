@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:statistics/statistics.dart';
 
 import 'stack_item.dart';
 
 class StackItemWidget extends StatefulWidget {
   const StackItemWidget({
-    @required this.onPaste,
-    @required this.item,
-    @required this.color,
-    @required this.onRemove,
-    Key key,
+    required this.onPaste,
+    required this.item,
+    required this.color,
+    required this.onRemove,
+    Key? key,
   }) : super(key: key);
 
-  final void Function(num newVal) onPaste;
+  final void Function(DynamicNumber newVal) onPaste;
   final void Function() onRemove;
   final StackItem item;
   final Color color;
 
   @override
-  _StackItemWidgetState createState() => _StackItemWidgetState();
+  StackItemWidgetState createState() => StackItemWidgetState();
 }
 
-class _StackItemWidgetState extends State<StackItemWidget> {
+class StackItemWidgetState extends State<StackItemWidget> {
   var _highlighted = false;
 
   @override
@@ -65,9 +66,10 @@ class _StackItemWidgetState extends State<StackItemWidget> {
               switch (value) {
                 case 'copy':
                   Clipboard.setData(ClipboardData(text: widget.item.toRawString())).then(
-                    (_) => Scaffold.of(context).showSnackBar(
+                    (_) => ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Copied to clipboard'),
+                        behavior: SnackBarBehavior.floating,
                         duration: Duration(seconds: 2),
                       ),
                     ),
@@ -75,25 +77,22 @@ class _StackItemWidgetState extends State<StackItemWidget> {
                   break;
                 case 'paste':
                   Clipboard.getData('text/plain').then((value) {
-                    num newVal;
-                    final s = value.text;
-                    try {
-                      if (s.contains('.')) {
-                        newVal = double.parse(s);
-                      } else {
-                        newVal = int.parse(s);
-                      }
-                    } on FormatException catch (_) {
-                      Scaffold.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Clipboard is not a valid number'),
-                          backgroundColor: Theme.of(context).errorColor,
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                      return 0;
+                    final s = value!.text!;
+                    final newVal = DynamicNumber.tryParse(s);
+                    if (newVal is DynamicNumber) {
+                      widget.onPaste(newVal);
+                      return 1;
                     }
-                    widget.onPaste(newVal);
+                    // TODO(alexei): Refactor this to shared error handling.
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Clipboard is not a valid number'),
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                    return 0;
                   });
                   break;
                 case 'remove':
@@ -128,14 +127,14 @@ class _StackItemWidgetState extends State<StackItemWidget> {
 
 class Carat extends StatefulWidget {
   @override
-  const Carat({Key key}) : super(key: key);
+  const Carat({Key? key}) : super(key: key);
 
   @override
-  _CaratState createState() => _CaratState();
+  CaratState createState() => CaratState();
 }
 
-class _CaratState extends State<Carat> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
+class CaratState extends State<Carat> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
   final duration = const Duration(milliseconds: 500);
 
   @override
